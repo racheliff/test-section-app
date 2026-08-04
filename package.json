@@ -11,7 +11,6 @@
   "dependencies": {
     "@libsql/client": "^0.17.4",
     "@libsql/darwin-arm64": "^0.5.29",
-    "@prisma/adapter-libsql": "^7.9.1",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
     "date-fns": "^4.4.0",
