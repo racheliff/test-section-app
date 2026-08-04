@@ -1,0 +1,192 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Project {
+  id        String   @id @default(cuid())
+  name      String
+  code      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  projectChapters ProjectChapter[]
+  professionals   Professional[]
+}
+
+model Professional {
+  id        String   @id @default(cuid())
+  projectId String
+  category  String   // "professional" or "consultant"
+  role      String
+  name      String
+  company   String?
+  phone     String?
+  email     String?
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Chapter {
+  id        String @id @default(cuid())
+  code      String @unique
+  name      String
+  sortOrder Int    @default(0)
+
+  // Relations
+  projectChapters ProjectChapter[]
+}
+
+model ProjectChapter {
+  id        String   @id @default(cuid())
+  projectId String
+  chapterId String
+  fileType  String   // "building" or "development"
+  createdAt DateTime @default(now())
+
+  project  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  chapter  Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  // Relations
+  testSections TestSection[]
+  checklists   Checklist[]
+
+  @@unique([projectId, chapterId, fileType])
+}
+
+model Checklist {
+  id               String   @id @default(cuid())
+  projectChapterId String
+  name             String
+  building         String?
+  elementType      String?
+  location         String?
+  planNumber       String?
+  mainContractor   String?
+  openDate         DateTime?
+  closeDate        DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  projectChapter ProjectChapter @relation(fields: [projectChapterId], references: [id], onDelete: Cascade)
+  items          ChecklistItem[]
+}
+
+model ChecklistItem {
+  id           String   @id @default(cuid())
+  checklistId  String
+  workStage    String
+  description  String
+  responsible  String
+  name         String?
+  signature    String?
+  date         DateTime?
+  notes        String?
+  isCompleted  Boolean  @default(false)
+  sortOrder    Int      @default(0)
+
+  checklist Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+}
+
+model TestSection {
+  id               String   @id @default(cuid())
+  formNumber       String   @unique
+  projectChapterId String
+
+  projectChapter ProjectChapter @relation(fields: [projectChapterId], references: [id], onDelete: Cascade)
+
+  // Form Details
+  date        DateTime
+  sectionName String
+
+  // Description
+  locationDescription String?
+  structure           String?
+  crossSections       String?
+  descriptionNotes    String?
+
+  // Execution Steps
+  executionSteps String?
+
+  // Approvals
+  qualityControlApproval     Boolean   @default(false)
+  qualityControlApproverName String?
+  qualityControlApprovalDate DateTime?
+  supervisionApproval        Boolean   @default(false)
+  supervisionApproverName    String?
+  supervisionApprovalDate    DateTime?
+
+  // Summary
+  status       String   @default("pending")
+  summaryNotes String?
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  participants Participant[]
+  crewMembers  CrewMember[]
+  equipment    Equipment[]
+  tests        Test[]
+  attachments  Attachment[]
+}
+
+model Participant {
+  id            String      @id @default(cuid())
+  testSectionId String
+  testSection   TestSection @relation(fields: [testSectionId], references: [id], onDelete: Cascade)
+
+  role    String
+  name    String?
+  company String?
+  phone   String?
+}
+
+model CrewMember {
+  id            String      @id @default(cuid())
+  testSectionId String
+  testSection   TestSection @relation(fields: [testSectionId], references: [id], onDelete: Cascade)
+
+  name String
+  role String?
+}
+
+model Equipment {
+  id            String      @id @default(cuid())
+  testSectionId String
+  testSection   TestSection @relation(fields: [testSectionId], references: [id], onDelete: Cascade)
+
+  name     String
+  quantity Int     @default(1)
+  notes    String?
+}
+
+model Test {
+  id            String      @id @default(cuid())
+  testSectionId String
+  testSection   TestSection @relation(fields: [testSectionId], references: [id], onDelete: Cascade)
+
+  testType          String
+  requirement       String?
+  result            String?
+  certificateNumber String?
+  status            String?
+}
+
+model Attachment {
+  id            String      @id @default(cuid())
+  testSectionId String
+  testSection   TestSection @relation(fields: [testSectionId], references: [id], onDelete: Cascade)
+
+  filename   String
+  filepath   String
+  filesize   Int
+  mimetype   String
+  uploadedAt DateTime @default(now())
+}
