@@ -630,109 +630,148 @@ export default function ChapterDetailPage() {
                       </div>
                     </div>
 
-                    {/* Checklist Items Table */}
+                    {/* Checklist Items - Sections Layout */}
                     {isExpanded && (
-                      <div className="border-t border-gray-200">
-                        <div className="overflow-x-auto">
-                          <table className="w-full">
-                            <thead className="bg-blue-50">
-                              <tr>
-                                <th className="text-right py-3 px-4 font-semibold text-blue-800 w-12">✓</th>
-                                <th className="text-right py-3 px-4 font-semibold text-blue-800">שלב עבודה</th>
-                                <th className="text-right py-3 px-4 font-semibold text-blue-800">תיאור הבדיקה</th>
-                                <th className="text-right py-3 px-4 font-semibold text-blue-800">אחריות</th>
-                                <th className="text-right py-3 px-4 font-semibold text-blue-800">שם</th>
-                                <th className="text-right py-3 px-4 font-semibold text-blue-800">חתימה</th>
-                                <th className="text-right py-3 px-4 font-semibold text-blue-800">תאריך</th>
-                                <th className="text-right py-3 px-4 font-semibold text-blue-800">הערות</th>
-                                <th className="w-12"></th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {Object.entries(groupedItems).map(([stage, items]) => (
-                                items.map((item, itemIndex) => (
-                                  <tr
+                      <div className="border-t border-gray-200 p-4 space-y-6">
+                        {Object.entries(groupedItems).map(([stage, items], stageIndex) => (
+                          <div key={stage} className="bg-slate-50 rounded-xl p-4">
+                            {/* Stage Header */}
+                            <h3 className="flex items-center gap-3 text-blue-700 font-semibold text-base mb-4 pb-2 border-b-2 border-blue-100">
+                              <span className="bg-blue-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold">
+                                {stageIndex + 1}
+                              </span>
+                              פרק {stageIndex + 1} – {stage}
+                            </h3>
+
+                            {/* Items */}
+                            <div className="space-y-3">
+                              {items.map((item, itemIndex) => {
+                                const itemNum = `${stageIndex + 1}.${itemIndex + 1}`;
+                                return (
+                                  <div
                                     key={item.id}
-                                    className={`border-b border-gray-100 ${item.isCompleted ? 'bg-green-50' : 'hover:bg-gray-50'}`}
+                                    className={`rounded-xl p-4 border-2 transition-all ${
+                                      item.isCompleted
+                                        ? 'bg-emerald-50 border-emerald-300'
+                                        : 'bg-white border-gray-200 hover:border-gray-300'
+                                    }`}
                                   >
-                                    <td className="py-3 px-4">
-                                      <input
-                                        type="checkbox"
-                                        checked={item.isCompleted}
-                                        onChange={(e) => handleUpdateItem(item.id, 'isCompleted', e.target.checked)}
-                                        className="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
-                                      />
-                                    </td>
-                                    <td className="py-3 px-4 font-medium text-blue-700">
-                                      {itemIndex === 0 ? stage : ''}
-                                    </td>
-                                    <td className="py-3 px-4 text-gray-800">{item.description}</td>
-                                    <td className="py-3 px-4 text-gray-600">{item.responsible}</td>
-                                    <td className="py-3 px-4">
-                                      <input
-                                        type="text"
-                                        value={item.name || ''}
-                                        onChange={(e) => handleUpdateItem(item.id, 'name', e.target.value)}
-                                        placeholder="שם"
-                                        className="w-full px-2 py-1 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                      />
-                                    </td>
-                                    <td className="py-3 px-4">
-                                      {item.signature ? (
-                                        <div className="flex items-center gap-2">
-                                          <img
-                                            src={item.signature}
-                                            alt="חתימה"
-                                            className="h-8 max-w-24 object-contain border border-gray-200 rounded"
-                                          />
-                                          <button
-                                            onClick={() => openSignatureModal(item.id, checklist.id)}
-                                            className="text-blue-600 hover:text-blue-800 text-xs"
-                                          >
-                                            ערוך
-                                          </button>
-                                        </div>
-                                      ) : (
-                                        <button
-                                          onClick={() => openSignatureModal(item.id, checklist.id)}
-                                          className="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-sm transition-colors"
-                                        >
-                                          חתום
-                                        </button>
-                                      )}
-                                    </td>
-                                    <td className="py-3 px-4">
-                                      <input
-                                        type="date"
-                                        value={item.date ? new Date(item.date).toISOString().split('T')[0] : ''}
-                                        onChange={(e) => handleUpdateItem(item.id, 'date', e.target.value)}
-                                        className="w-full px-2 py-1 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                      />
-                                    </td>
-                                    <td className="py-3 px-4">
-                                      <input
-                                        type="text"
-                                        value={item.notes || ''}
-                                        onChange={(e) => handleUpdateItem(item.id, 'notes', e.target.value)}
-                                        placeholder="הערות"
-                                        className="w-full px-2 py-1 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                      />
-                                    </td>
-                                    <td className="py-3 px-4">
+                                    {/* Item Header */}
+                                    <div className="flex gap-3 items-start mb-3">
+                                      <div className="bg-slate-700 text-white min-w-[40px] h-6 rounded-full flex items-center justify-center text-xs font-bold">
+                                        {itemNum}
+                                      </div>
+                                      <div className="flex-1">
+                                        <div className="text-sm font-medium text-gray-800">{item.description}</div>
+                                        <div className="text-xs text-gray-400 mt-1">אחראי: {item.responsible}</div>
+                                      </div>
                                       <button
                                         onClick={() => handleDeleteItem(checklist.id, item.id)}
-                                        className="w-8 h-8 flex items-center justify-center text-red-500 hover:bg-red-100 rounded transition-colors"
-                                        title="מחק שורה"
+                                        className="text-red-400 hover:text-red-600 hover:bg-red-50 rounded p-1"
+                                        title="מחק"
                                       >
-                                        ×
+                                        ✕
                                       </button>
-                                    </td>
-                                  </tr>
-                                ))
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
+                                    </div>
+
+                                    {/* Status Buttons */}
+                                    <div className="grid grid-cols-5 gap-1.5 mb-3">
+                                      <button
+                                        onClick={() => handleUpdateItem(item.id, 'isCompleted', false)}
+                                        className={`border-2 rounded-lg py-2 text-xs font-bold transition-all ${
+                                          !item.isCompleted && !item.notes?.includes('לא תקין')
+                                            ? 'bg-amber-100 border-amber-400 text-amber-800'
+                                            : 'bg-white text-gray-600 border-gray-200'
+                                        }`}
+                                      >
+                                        טרם נבדק
+                                      </button>
+                                      <button
+                                        onClick={() => handleUpdateItem(item.id, 'isCompleted', true)}
+                                        className={`border-2 rounded-lg py-2 text-xs font-bold transition-all ${
+                                          item.isCompleted
+                                            ? 'bg-emerald-500 border-emerald-600 text-white'
+                                            : 'bg-white text-gray-600 border-gray-200'
+                                        }`}
+                                      >
+                                        תקין
+                                      </button>
+                                      <button
+                                        className="border-2 rounded-lg py-2 text-xs font-bold bg-white text-gray-600 border-gray-200 hover:bg-red-50 hover:border-red-300"
+                                      >
+                                        לא תקין
+                                      </button>
+                                      <button
+                                        className="border-2 rounded-lg py-2 text-xs font-bold bg-white text-gray-600 border-gray-200 hover:bg-gray-100"
+                                      >
+                                        לא רלוונטי
+                                      </button>
+                                      <button
+                                        className="border-2 rounded-lg py-2 text-xs font-bold bg-white text-gray-600 border-gray-200 hover:bg-violet-50 hover:border-violet-300"
+                                      >
+                                        תוקן
+                                      </button>
+                                    </div>
+
+                                    {/* Meta Fields */}
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                      <div className="flex flex-col gap-1">
+                                        <label className="text-xs font-semibold text-gray-500">תאריך</label>
+                                        <input
+                                          type="date"
+                                          value={item.date ? new Date(item.date).toISOString().split('T')[0] : ''}
+                                          onChange={(e) => handleUpdateItem(item.id, 'date', e.target.value)}
+                                          className="border-2 rounded-lg p-2 text-sm bg-white border-gray-200 focus:border-blue-400 focus:outline-none"
+                                        />
+                                      </div>
+                                      <div className="flex flex-col gap-1">
+                                        <label className="text-xs font-semibold text-gray-500">שם מאשר</label>
+                                        <input
+                                          type="text"
+                                          value={item.name || ''}
+                                          onChange={(e) => handleUpdateItem(item.id, 'name', e.target.value)}
+                                          placeholder="הזן שם"
+                                          className="border-2 rounded-lg p-2 text-sm bg-white border-gray-200 focus:border-blue-400 focus:outline-none"
+                                        />
+                                      </div>
+                                      <div className="flex flex-col gap-1">
+                                        <label className="text-xs font-semibold text-gray-500">חתימה</label>
+                                        {item.signature ? (
+                                          <div className="flex items-center gap-2 border-2 rounded-lg p-1.5 bg-white border-gray-200">
+                                            <img src={item.signature} alt="חתימה" className="h-6 object-contain" />
+                                            <button
+                                              onClick={() => openSignatureModal(item.id, checklist.id)}
+                                              className="text-blue-600 hover:text-blue-800 text-xs"
+                                            >
+                                              שנה
+                                            </button>
+                                          </div>
+                                        ) : (
+                                          <button
+                                            onClick={() => openSignatureModal(item.id, checklist.id)}
+                                            className="border-2 border-dashed rounded-lg p-2 text-sm text-blue-600 hover:bg-blue-50 border-blue-300"
+                                          >
+                                            לחץ לחתימה
+                                          </button>
+                                        )}
+                                      </div>
+                                      <div className="flex flex-col gap-1">
+                                        <label className="text-xs font-semibold text-gray-500">הערות</label>
+                                        <input
+                                          type="text"
+                                          value={item.notes || ''}
+                                          onChange={(e) => handleUpdateItem(item.id, 'notes', e.target.value)}
+                                          placeholder="הוסף הערה..."
+                                          className="border-2 rounded-lg p-2 text-sm bg-white border-gray-200 focus:border-blue-400 focus:outline-none"
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
