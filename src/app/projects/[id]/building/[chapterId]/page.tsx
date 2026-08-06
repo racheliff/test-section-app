@@ -64,10 +64,18 @@ export default function ChapterDetailPage() {
   const [loading, setLoading] = useState(true);
   const [showNewChecklist, setShowNewChecklist] = useState(false);
   const [newChecklist, setNewChecklist] = useState({
-    building: '',
-    elementType: '',
-    planNumber: '',
-    mainContractor: '',
+    building: '',          // מבנה/אזור
+    workLocation: '',      // מיקום העבודה
+    workType: '',          // סוג העבודה
+    openDate: '',          // תאריך פתיחת רת"ק
+    qcName: '',            // שם בקר איכות
+    workManagerName: '',   // שם מנהל עבודה
+    planNumber: '',        // מספר תוכניות
+    detailNumber: '',      // מספר תוכנו
+    sectionsFromPlan: '',  // חתכים מהתוכניות
+    soilType: '',          // סוג הקרקע
+    fillMaterialType: '',  // סוג חומר המילוי
+    performingLab: '',     // מעבדה מבצעת
   });
   const [expandedChecklist, setExpandedChecklist] = useState<string | null>(null);
   const [signatureModal, setSignatureModal] = useState<{ itemId: string; checklistId: string } | null>(null);
@@ -107,7 +115,7 @@ export default function ChapterDetailPage() {
   const handleCreateChecklist = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const name = [newChecklist.elementType, newChecklist.building].filter(Boolean).join(' - ') || 'רשימת תיוג';
+      const name = [newChecklist.workType, newChecklist.building, newChecklist.workLocation].filter(Boolean).join(' - ') || 'רשימת תיוג';
       const res = await fetch(`/api/project-chapters/${params.chapterId}/checklists`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -115,7 +123,20 @@ export default function ChapterDetailPage() {
       });
 
       if (res.ok) {
-        setNewChecklist({ building: '', elementType: '', planNumber: '', mainContractor: '' });
+        setNewChecklist({
+          building: '',
+          workLocation: '',
+          workType: '',
+          openDate: '',
+          qcName: '',
+          workManagerName: '',
+          planNumber: '',
+          detailNumber: '',
+          sectionsFromPlan: '',
+          soilType: '',
+          fillMaterialType: '',
+          performingLab: '',
+        });
         setShowNewChecklist(false);
         fetchData();
       }
@@ -397,59 +418,144 @@ export default function ChapterDetailPage() {
           {/* New Checklist Form */}
           {showNewChecklist && (
             <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-              <h3 className="text-lg font-semibold mb-4">רשימת תיוג חדשה</h3>
+              <h3 className="text-lg font-semibold mb-4 text-blue-700 border-b-2 border-blue-100 pb-2">רשימת תיוג חדשה</h3>
               <form onSubmit={handleCreateChecklist} className="space-y-4">
+                {/* שורה 1 */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">מבנה</label>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">מבנה/אזור</label>
                     <input
                       type="text"
                       value={newChecklist.building}
                       onChange={(e) => setNewChecklist({ ...newChecklist, building: e.target.value })}
-                      placeholder="לדוגמה: ראשי-קומת מרתף"
-                      className="w-full p-2 border border-gray-300 rounded-lg"
+                      placeholder="מבנה"
+                      className="w-full p-2.5 border border-gray-300 rounded-lg text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">סוג אלמנט</label>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">מיקום העבודה</label>
                     <input
                       type="text"
-                      value={newChecklist.elementType}
-                      onChange={(e) => setNewChecklist({ ...newChecklist, elementType: e.target.value })}
-                      placeholder="לדוגמה: מחיצות"
-                      className="w-full p-2 border border-gray-300 rounded-lg"
+                      value={newChecklist.workLocation}
+                      onChange={(e) => setNewChecklist({ ...newChecklist, workLocation: e.target.value })}
+                      className="w-full p-2.5 border border-gray-300 rounded-lg text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">מספר תוכנית</label>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">סוג העבודה</label>
+                    <select
+                      value={newChecklist.workType}
+                      onChange={(e) => setNewChecklist({ ...newChecklist, workType: e.target.value })}
+                      className="w-full p-2.5 border border-gray-300 rounded-lg text-sm"
+                    >
+                      <option value="">בחר סוג עבודה</option>
+                      <option value="חפירה">חפירה</option>
+                      <option value="מילוי">מילוי</option>
+                      <option value="הכנת קרקע">הכנת קרקע</option>
+                      <option value="הידוק">הידוק</option>
+                      <option value="עבודות פיתוח">עבודות פיתוח</option>
+                      <option value="אחר">אחר</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">תאריך פתיחת רת״ק</label>
+                    <input
+                      type="date"
+                      value={newChecklist.openDate}
+                      onChange={(e) => setNewChecklist({ ...newChecklist, openDate: e.target.value })}
+                      className="w-full p-2.5 border border-gray-300 rounded-lg text-sm"
+                    />
+                  </div>
+                </div>
+                {/* שורה 2 */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">שם בקר איכות</label>
+                    <input
+                      type="text"
+                      value={newChecklist.qcName}
+                      onChange={(e) => setNewChecklist({ ...newChecklist, qcName: e.target.value })}
+                      className="w-full p-2.5 border border-gray-300 rounded-lg text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">שם מנהל עבודה</label>
+                    <input
+                      type="text"
+                      value={newChecklist.workManagerName}
+                      onChange={(e) => setNewChecklist({ ...newChecklist, workManagerName: e.target.value })}
+                      className="w-full p-2.5 border border-gray-300 rounded-lg text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">מספר תוכניות</label>
                     <input
                       type="text"
                       value={newChecklist.planNumber}
                       onChange={(e) => setNewChecklist({ ...newChecklist, planNumber: e.target.value })}
-                      className="w-full p-2 border border-gray-300 rounded-lg"
+                      className="w-full p-2.5 border border-gray-300 rounded-lg text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">קבלן ראשי</label>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">מספר תוכנו</label>
                     <input
                       type="text"
-                      value={newChecklist.mainContractor}
-                      onChange={(e) => setNewChecklist({ ...newChecklist, mainContractor: e.target.value })}
-                      className="w-full p-2 border border-gray-300 rounded-lg"
+                      value={newChecklist.detailNumber}
+                      onChange={(e) => setNewChecklist({ ...newChecklist, detailNumber: e.target.value })}
+                      className="w-full p-2.5 border border-gray-300 rounded-lg text-sm"
                     />
                   </div>
                 </div>
-                <div className="flex gap-3">
+                {/* שורה 3 */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">חתכים מהתוכניות</label>
+                    <input
+                      type="text"
+                      value={newChecklist.sectionsFromPlan}
+                      onChange={(e) => setNewChecklist({ ...newChecklist, sectionsFromPlan: e.target.value })}
+                      className="w-full p-2.5 border border-gray-300 rounded-lg text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">סוג הקרקע</label>
+                    <input
+                      type="text"
+                      value={newChecklist.soilType}
+                      onChange={(e) => setNewChecklist({ ...newChecklist, soilType: e.target.value })}
+                      className="w-full p-2.5 border border-gray-300 rounded-lg text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">סוג חומר המילוי</label>
+                    <input
+                      type="text"
+                      value={newChecklist.fillMaterialType}
+                      onChange={(e) => setNewChecklist({ ...newChecklist, fillMaterialType: e.target.value })}
+                      className="w-full p-2.5 border border-gray-300 rounded-lg text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">מעבדה מבצעת</label>
+                    <input
+                      type="text"
+                      value={newChecklist.performingLab}
+                      onChange={(e) => setNewChecklist({ ...newChecklist, performingLab: e.target.value })}
+                      className="w-full p-2.5 border border-gray-300 rounded-lg text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-3 pt-2">
                   <button
                     type="submit"
-                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                    className="bg-green-600 text-white px-5 py-2.5 rounded-lg hover:bg-green-700 font-medium"
                   >
                     צור רשימה
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowNewChecklist(false)}
-                    className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400"
+                    className="bg-gray-300 text-gray-700 px-5 py-2.5 rounded-lg hover:bg-gray-400"
                   >
                     ביטול
                   </button>
