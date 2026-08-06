@@ -88,6 +88,7 @@ model ChecklistItem {
   date         DateTime?
   notes        String?
   isCompleted  Boolean  @default(false)
+  status       String   @default("pending")
   sortOrder    Int      @default(0)
 
   checklist Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)

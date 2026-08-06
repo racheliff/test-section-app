@@ -17,6 +17,7 @@ export async function PUT(
         date: data.date ? new Date(data.date) : null,
         notes: data.notes,
         isCompleted: data.isCompleted,
+        status: data.status,
       },
     });
 

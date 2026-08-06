@@ -28,6 +28,37 @@ const CHAPTER_01_ITEMS = [
   { workStage: 'אישור לפני מסירה', description: 'הושלמו מדידות, תיעוד ותוכניות עדות.', responsible: 'קבלן', sortOrder: 20 },
 ];
 
+// פרק 02 - בטון יצוק באתר (24 סעיפים: 9+9+6)
+const CHAPTER_02_ITEMS = [
+  // פרק 1 – בקרה מקדימה (9 פריטים)
+  { workStage: 'בקרה מקדימה', description: 'קיימות תוכניות, פרטי ביצוע, ומפרט ותוכניות יציקה מאושרים.', responsible: 'קבלן', sortOrder: 1 },
+  { workStage: 'בקרה מקדימה', description: 'סוג הבטון, דרגת החוזק, דרגת החשיפה והתערובת תואמים למסמכים המאושרים.', responsible: 'בקרת איכות', sortOrder: 2 },
+  { workStage: 'בקרה מקדימה', description: 'התפסות ביציבות, נקיות, שמנות, ותומכות במפלסים הנדרשים.', responsible: 'קבלן', sortOrder: 3 },
+  { workStage: 'בקרה מקדימה', description: 'זיווג תוכנית והתוכניות: קוטרים, מרחקים, דריכות, וכיפופי עבודה.', responsible: 'בקרת איכות', sortOrder: 4 },
+  { workStage: 'בקרה מקדימה', description: 'כיסוי בטון, ספייסרים והתומכות ביציבות ובמיצוב.', responsible: 'קבלן', sortOrder: 5 },
+  { workStage: 'בקרה מקדימה', description: 'פתחים, שרוולים, עוגנים, ומוברים ופרופילים מותקנים ומקובעים.', responsible: 'קבלן', sortOrder: 6 },
+  { workStage: 'בקרה מקדימה', description: 'תפרים, והפסקות יציקה ומוגדרים ליציקה קודמת מתאם לפרמיה.', responsible: 'קבלן', sortOrder: 7 },
+  { workStage: 'בקרה מקדימה', description: 'שטח היציקה נקי ויבש, פסולת, ובטון קשור והכברים זרו.', responsible: 'קבלן', sortOrder: 8 },
+  { workStage: 'בקרה מקדימה', description: 'קיימות ציוד, כון מים, תאורה, ורטט והציוד משפרה והתאמות.', responsible: 'קבלן', sortOrder: 9 },
+  // פרק 2 – בקרה שוטפת (9 פריטים)
+  { workStage: 'בקרה שוטפת', description: 'תעודות המשלוח נבדקו והזווג תואמת להזמנה ולתערובת המאושרת.', responsible: 'בקרת איכות', sortOrder: 10 },
+  { workStage: 'בקרה שוטפת', description: 'כונן ותיעוד, תמונות והפרטוק ומסור הפרטוק נרשמו או ניצף תקינות.', responsible: 'בקרת איכות', sortOrder: 11 },
+  { workStage: 'בקרה שוטפת', description: 'לא נוספה מים לא תוספים באתר ללא אישור ותיעוד.', responsible: 'בקרת איכות', sortOrder: 12 },
+  { workStage: 'בקרה שוטפת', description: 'מבוצעות בדיקות בטון ברמה לא בכל מועמדות בהתאם לתוכניות ולבדיקות.', responsible: 'בקרת איכות', sortOrder: 13 },
+  { workStage: 'בקרה שוטפת', description: 'הבטונה יצקת ברציפות ובמסור התוכניה, ללא הפרדות לא נפילות לתוך הבקרות.', responsible: 'קבלן', sortOrder: 14 },
+  { workStage: 'בקרה שוטפת', description: 'מבוצע ריטוט שתואמת ומספק, ללא ריטוט ותיר שפוגע בבטון ובתפסות.', responsible: 'קבלן', sortOrder: 15 },
+  { workStage: 'בקרה שוטפת', description: 'לא נצפה תפוחה, פתיחות, נזילות או עוויות של התפסות והתומכות.', responsible: 'קבלן', sortOrder: 16 },
+  { workStage: 'בקרה שוטפת', description: 'המפלס, עובי, ושיפועים וכיור פני הבטון מבוצעת בהתאם לתוכניה.', responsible: 'קבלן', sortOrder: 17 },
+  { workStage: 'בקרה שוטפת', description: 'והמשפרה בבטונה עם הזווג והמועד והמשלוח של נקבע.', responsible: 'בקרת איכות', sortOrder: 18 },
+  // פרק 3 – אישור לפני מסירה (6 פריטים)
+  { workStage: 'אישור לפני מסירה', description: 'פירוק התפסות והתומכות מבוצע לאחר קבלת חוזק ואישור והמועד תואם.', responsible: 'בקרת איכות', sortOrder: 19 },
+  { workStage: 'אישור לפני מסירה', description: 'נבדקו איכות, המפלסים, לא נמצאות, ומיקום פתחים והמוגדרים לאלמנט.', responsible: 'בקרת איכות', sortOrder: 20 },
+  { workStage: 'אישור לפני מסירה', description: 'פני הבטון נבדקו ולא נמצאו סדירציות, חוסר יצק, סוגים לא ומרות ושחיף.', responsible: 'קבלן', sortOrder: 21 },
+  { workStage: 'אישור לפני מסירה', description: 'ליקויים תועדו ותוקנו ואושרו והמוגדרים לאושרים.', responsible: 'בקרת איכות', sortOrder: 22 },
+  { workStage: 'אישור לפני מסירה', description: 'תוצאות בדיקות הבטון התקבלו, נבדקו והשיגו לבטונה ולהמועד ליציקה.', responsible: 'בקרת איכות', sortOrder: 23 },
+  { workStage: 'אישור לפני מסירה', description: 'והמשפרה, ותיעוד, תעודות והמשלוח, ובאות הזמנות לתוכניות.', responsible: 'קבלן', sortOrder: 24 },
+];
+
 // ברירת מחדל לפרקים שאין להם תבנית ספציפית
 const DEFAULT_CHECKLIST_ITEMS = [
   { workStage: 'בקרה מקדימה', description: 'בדיקת תוכניות ומסמכים מאושרים', responsible: 'בקרת איכות', sortOrder: 1 },
@@ -43,6 +74,7 @@ const DEFAULT_CHECKLIST_ITEMS = [
 
 const CHAPTER_CHECKLIST_ITEMS: Record<string, typeof DEFAULT_CHECKLIST_ITEMS> = {
   '01': CHAPTER_01_ITEMS,
+  '02': CHAPTER_02_ITEMS,
 };
 
 function getChecklistItemsForChapter(chapterCode: string) {

@@ -34,6 +34,7 @@ interface ChecklistItem {
   date: string | null;
   notes: string | null;
   isCompleted: boolean;
+  status: string;
   sortOrder: number;
 }
 
@@ -156,8 +157,17 @@ export default function ChapterDetailPage() {
         date: item.date,
         notes: item.notes,
         isCompleted: item.isCompleted,
+        status: item.status || 'pending',
       };
       updateData[field] = value;
+
+      // אם זה עדכון סטטוס, עדכן גם isCompleted
+      if (field === 'status') {
+        updateData.isCompleted = (value === 'ok' || value === 'corrected');
+        if ((value === 'ok' || value === 'not_ok' || value === 'corrected') && !item.date) {
+          updateData.date = new Date().toISOString();
+        }
+      }
 
       if (field === 'isCompleted' && value === true && !item.date) {
         updateData.date = new Date().toISOString();
@@ -171,9 +181,17 @@ export default function ChapterDetailPage() {
 
       setChecklists(prev => prev.map(checklist => ({
         ...checklist,
-        items: checklist.items.map(i =>
-          i.id === itemId ? { ...i, [field]: value, ...(field === 'isCompleted' && value === true && !i.date ? { date: new Date().toISOString() } : {}) } : i
-        ),
+        items: checklist.items.map(i => {
+          if (i.id !== itemId) return i;
+          const updates: Partial<ChecklistItem> = { [field]: value };
+          if (field === 'status') {
+            updates.isCompleted = (value === 'ok' || value === 'corrected');
+            if ((value === 'ok' || value === 'not_ok' || value === 'corrected') && !i.date) {
+              updates.date = new Date().toISOString();
+            }
+          }
+          return { ...i, ...updates };
+        }),
       })));
     } catch (error) {
       console.error('Error updating item:', error);
@@ -651,8 +669,10 @@ export default function ChapterDetailPage() {
                                   <div
                                     key={item.id}
                                     className={`rounded-xl p-4 border-2 transition-all ${
-                                      item.isCompleted
+                                      item.status === 'ok' || item.status === 'corrected'
                                         ? 'bg-emerald-50 border-emerald-300'
+                                        : item.status === 'not_ok'
+                                        ? 'bg-red-50 border-red-300'
                                         : 'bg-white border-gray-200 hover:border-gray-300'
                                     }`}
                                   >
@@ -677,37 +697,52 @@ export default function ChapterDetailPage() {
                                     {/* Status Buttons */}
                                     <div className="grid grid-cols-5 gap-1.5 mb-3">
                                       <button
-                                        onClick={() => handleUpdateItem(item.id, 'isCompleted', false)}
+                                        onClick={() => handleUpdateItem(item.id, 'status', 'pending')}
                                         className={`border-2 rounded-lg py-2 text-xs font-bold transition-all ${
-                                          !item.isCompleted && !item.notes?.includes('לא תקין')
+                                          (item.status || 'pending') === 'pending'
                                             ? 'bg-amber-100 border-amber-400 text-amber-800'
-                                            : 'bg-white text-gray-600 border-gray-200'
+                                            : 'bg-white text-gray-600 border-gray-200 hover:bg-amber-50'
                                         }`}
                                       >
                                         טרם נבדק
                                       </button>
                                       <button
-                                        onClick={() => handleUpdateItem(item.id, 'isCompleted', true)}
+                                        onClick={() => handleUpdateItem(item.id, 'status', 'ok')}
                                         className={`border-2 rounded-lg py-2 text-xs font-bold transition-all ${
-                                          item.isCompleted
+                                          item.status === 'ok'
                                             ? 'bg-emerald-500 border-emerald-600 text-white'
-                                            : 'bg-white text-gray-600 border-gray-200'
+                                            : 'bg-white text-gray-600 border-gray-200 hover:bg-emerald-50'
                                         }`}
                                       >
                                         תקין
                                       </button>
                                       <button
-                                        className="border-2 rounded-lg py-2 text-xs font-bold bg-white text-gray-600 border-gray-200 hover:bg-red-50 hover:border-red-300"
+                                        onClick={() => handleUpdateItem(item.id, 'status', 'not_ok')}
+                                        className={`border-2 rounded-lg py-2 text-xs font-bold transition-all ${
+                                          item.status === 'not_ok'
+                                            ? 'bg-red-500 border-red-600 text-white'
+                                            : 'bg-white text-gray-600 border-gray-200 hover:bg-red-50'
+                                        }`}
                                       >
                                         לא תקין
                                       </button>
                                       <button
-                                        className="border-2 rounded-lg py-2 text-xs font-bold bg-white text-gray-600 border-gray-200 hover:bg-gray-100"
+                                        onClick={() => handleUpdateItem(item.id, 'status', 'na')}
+                                        className={`border-2 rounded-lg py-2 text-xs font-bold transition-all ${
+                                          item.status === 'na'
+                                            ? 'bg-slate-400 border-slate-500 text-white'
+                                            : 'bg-white text-gray-600 border-gray-200 hover:bg-slate-50'
+                                        }`}
                                       >
                                         לא רלוונטי
                                       </button>
                                       <button
-                                        className="border-2 rounded-lg py-2 text-xs font-bold bg-white text-gray-600 border-gray-200 hover:bg-violet-50 hover:border-violet-300"
+                                        onClick={() => handleUpdateItem(item.id, 'status', 'corrected')}
+                                        className={`border-2 rounded-lg py-2 text-xs font-bold transition-all ${
+                                          item.status === 'corrected'
+                                            ? 'bg-violet-500 border-violet-600 text-white'
+                                            : 'bg-white text-gray-600 border-gray-200 hover:bg-violet-50'
+                                        }`}
                                       >
                                         תוקן
                                       </button>
