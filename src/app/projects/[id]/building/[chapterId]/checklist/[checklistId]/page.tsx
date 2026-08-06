@@ -15,8 +15,6 @@ interface ChecklistItem {
   notes: string | null;
   isCompleted: boolean;
   sortOrder: number;
-  status?: string;
-  approver?: string;
 }
 
 interface Checklist {
@@ -36,8 +34,16 @@ interface Checklist {
   };
 }
 
+interface ItemStatus {
+  status: string;
+  date: string;
+  approver: string;
+  notes: string;
+}
+
 interface Deficiency {
   id: string;
+  linkedItemNum: string;
   description: string;
   location: string;
   action: string;
@@ -51,6 +57,7 @@ interface Deficiency {
 
 interface LabTest {
   id: string;
+  testNumber: number;
   testType: string;
   layer: string;
   location: string;
@@ -67,19 +74,25 @@ interface SignatureData {
 }
 
 const STATUS_OPTIONS = [
-  { value: 'pending', label: 'טרם נבדק', color: 'bg-yellow-100 border-yellow-400 text-yellow-800' },
-  { value: 'ok', label: 'תקין', color: 'bg-green-500 border-green-600 text-white' },
-  { value: 'not_ok', label: 'לא תקין', color: 'bg-red-500 border-red-600 text-white' },
-  { value: 'na', label: 'לא רלוונטי', color: 'bg-gray-400 border-gray-500 text-white' },
-  { value: 'corrected', label: 'תוקן', color: 'bg-purple-500 border-purple-600 text-white' },
+  { value: 'pending', label: 'טרם נבדק', activeClass: 'bg-amber-100 border-amber-400 text-amber-800' },
+  { value: 'ok', label: 'תקין', activeClass: 'bg-emerald-500 border-emerald-600 text-white' },
+  { value: 'not_ok', label: 'לא תקין', activeClass: 'bg-red-500 border-red-600 text-white' },
+  { value: 'na', label: 'לא רלוונטי', activeClass: 'bg-slate-400 border-slate-500 text-white' },
+  { value: 'corrected', label: 'תוקן ונבדק מחדש', activeClass: 'bg-violet-500 border-violet-600 text-white' },
 ];
+
+const STAGE_LABELS: Record<string, string> = {
+  'בקרה מקדימה': 'בקרה מקדימה',
+  'בקרה שוטפת': 'בקרה שוטפת',
+  'אישור לפני מסירה': 'אישור לפני מסירה',
+};
 
 export default function ChecklistDetailPage() {
   const params = useParams();
   const router = useRouter();
   const [checklist, setChecklist] = useState<Checklist | null>(null);
   const [loading, setLoading] = useState(true);
-  const [itemStatuses, setItemStatuses] = useState<Record<string, { status: string; date: string; approver: string; notes: string }>>({});
+  const [itemStatuses, setItemStatuses] = useState<Record<string, ItemStatus>>({});
   const [deficiencies, setDeficiencies] = useState<Deficiency[]>([]);
   const [labTests, setLabTests] = useState<LabTest[]>([]);
   const [signatures, setSignatures] = useState<Record<string, SignatureData>>({
@@ -87,18 +100,24 @@ export default function ChecklistDetailPage() {
     qc: { name: '', role: '', dataURL: '' },
     supervision: { name: '', role: '', dataURL: '' },
   });
+  const [stage1Approval, setStage1Approval] = useState('');
   const [controlResult, setControlResult] = useState('');
   const [summaryNotes, setSummaryNotes] = useState('');
   const [activeSignature, setActiveSignature] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [openingLocked, setOpeningLocked] = useState(false);
 
   // Report details
   const [reportNumber, setReportNumber] = useState('');
-  const [qcName, setQcName] = useState('');
-  const [workManagerName, setWorkManagerName] = useState('');
+  const [structureArea, setStructureArea] = useState('');
   const [workLocation, setWorkLocation] = useState('');
   const [workType, setWorkType] = useState('');
+  const [qcName, setQcName] = useState('');
+  const [workManagerName, setWorkManagerName] = useState('');
+  const [planNumber, setPlanNumber] = useState('');
+  const [detailNumber, setDetailNumber] = useState('');
+  const [sectionsFromPlan, setSectionsFromPlan] = useState('');
   const [soilType, setSoilType] = useState('');
   const [fillMaterialType, setFillMaterialType] = useState('');
   const [performingLab, setPerformingLab] = useState('');
@@ -113,9 +132,10 @@ export default function ChecklistDetailPage() {
       if (res.ok) {
         const data = await res.json();
         setChecklist(data);
+        setStructureArea(data.building || '');
+        setPlanNumber(data.planNumber || '');
 
-        // Initialize item statuses
-        const statuses: Record<string, { status: string; date: string; approver: string; notes: string }> = {};
+        const statuses: Record<string, ItemStatus> = {};
         data.items.forEach((item: ChecklistItem) => {
           statuses[item.id] = {
             status: item.isCompleted ? 'ok' : 'pending',
@@ -133,44 +153,63 @@ export default function ChecklistDetailPage() {
     }
   };
 
+  const todayISO = () => new Date().toISOString().split('T')[0];
+
   const updateItemStatus = (itemId: string, field: string, value: string) => {
-    setItemStatuses(prev => ({
-      ...prev,
-      [itemId]: {
-        ...prev[itemId],
-        [field]: value,
-        ...(field === 'status' && (value === 'ok' || value === 'not_ok' || value === 'corrected') && !prev[itemId]?.date
-          ? { date: new Date().toISOString().split('T')[0] }
-          : {}),
-      },
-    }));
+    setItemStatuses(prev => {
+      const current = prev[itemId] || { status: 'pending', date: '', approver: '', notes: '' };
+      const updated = { ...current, [field]: value };
+
+      if (field === 'status' && (value === 'ok' || value === 'not_ok' || value === 'corrected')) {
+        if (!updated.date) updated.date = todayISO();
+      }
+
+      return { ...prev, [itemId]: updated };
+    });
   };
 
   const groupItemsByStage = (items: ChecklistItem[]) => {
     const groups: Record<string, ChecklistItem[]> = {};
-    items.forEach(item => {
-      if (!groups[item.workStage]) {
-        groups[item.workStage] = [];
+    const stageOrder = ['בקרה מקדימה', 'בקרה שוטפת', 'אישור לפני מסירה'];
+
+    stageOrder.forEach(stage => {
+      const stageItems = items.filter(item => item.workStage === stage);
+      if (stageItems.length > 0) {
+        groups[stage] = stageItems;
       }
-      groups[item.workStage].push(item);
     });
+
+    items.forEach(item => {
+      if (!stageOrder.includes(item.workStage)) {
+        if (!groups[item.workStage]) groups[item.workStage] = [];
+        groups[item.workStage].push(item);
+      }
+    });
+
     return groups;
   };
 
   const getStats = () => {
     const statuses = Object.values(itemStatuses);
-    return {
-      total: statuses.length,
-      ok: statuses.filter(s => s.status === 'ok').length,
-      not_ok: statuses.filter(s => s.status === 'not_ok').length,
-      pending: statuses.filter(s => s.status === 'pending').length,
-      checked: statuses.filter(s => s.status !== 'pending').length,
-    };
+    const total = statuses.length;
+    const ok = statuses.filter(s => s.status === 'ok').length;
+    const not_ok = statuses.filter(s => s.status === 'not_ok').length;
+    const pending = statuses.filter(s => s.status === 'pending').length;
+    const corrected = statuses.filter(s => s.status === 'corrected').length;
+    const na = statuses.filter(s => s.status === 'na').length;
+    const checked = ok + not_ok + na + corrected;
+    const openDef = deficiencies.filter(d => d.status !== 'closed').length;
+    const closedDef = deficiencies.filter(d => d.status === 'closed').length;
+    const completion = total > 0 ? Math.round((checked / total) * 100) : 0;
+
+    return { total, ok, not_ok, pending, corrected, na, checked, openDef, closedDef, completion };
   };
 
   const addDeficiency = () => {
+    const num = deficiencies.length + 1;
     setDeficiencies(prev => [...prev, {
       id: `def_${Date.now()}`,
+      linkedItemNum: '',
       description: '',
       location: '',
       action: '',
@@ -188,12 +227,15 @@ export default function ChecklistDetailPage() {
   };
 
   const removeDeficiency = (id: string) => {
+    if (!confirm('למחוק את רשומת הליקוי?')) return;
     setDeficiencies(prev => prev.filter(d => d.id !== id));
   };
 
   const addLabTest = () => {
+    const num = labTests.length + 1;
     setLabTests(prev => [...prev, {
       id: `lab_${Date.now()}`,
+      testNumber: num,
       testType: '',
       layer: '',
       location: '',
@@ -209,49 +251,28 @@ export default function ChecklistDetailPage() {
   };
 
   const removeLabTest = (id: string) => {
+    if (!confirm('למחוק את רשומת הבדיקה?')) return;
     setLabTests(prev => prev.filter(t => t.id !== id));
   };
 
-  // Signature canvas functions
-  const openSignatureModal = (key: string) => {
-    setActiveSignature(key);
-  };
-
-  const closeSignatureModal = () => {
-    setActiveSignature(null);
-    setIsDrawing(false);
-  };
-
-  const getCanvasContext = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return null;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.strokeStyle = '#000';
-      ctx.lineWidth = 2;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-    }
-    return ctx;
-  };
+  // Signature canvas
+  const openSignatureModal = (key: string) => setActiveSignature(key);
+  const closeSignatureModal = () => { setActiveSignature(null); setIsDrawing(false); };
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
-    const ctx = getCanvasContext();
-    if (!canvas || !ctx) return;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.strokeStyle = '#0d2b4e';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
 
     setIsDrawing(true);
     const rect = canvas.getBoundingClientRect();
-    let x: number, y: number;
-
-    if ('touches' in e) {
-      x = e.touches[0].clientX - rect.left;
-      y = e.touches[0].clientY - rect.top;
-    } else {
-      x = e.clientX - rect.left;
-      y = e.clientY - rect.top;
-    }
-
+    const x = ('touches' in e ? e.touches[0].clientX : e.clientX) - rect.left;
+    const y = ('touches' in e ? e.touches[0].clientY : e.clientY) - rect.top;
     ctx.beginPath();
     ctx.moveTo(x, y);
   };
@@ -259,49 +280,33 @@ export default function ChecklistDetailPage() {
   const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     if (!isDrawing) return;
     const canvas = canvasRef.current;
-    const ctx = getCanvasContext();
+    const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
 
+    if ('touches' in e) e.preventDefault();
     const rect = canvas.getBoundingClientRect();
-    let x: number, y: number;
-
-    if ('touches' in e) {
-      e.preventDefault();
-      x = e.touches[0].clientX - rect.left;
-      y = e.touches[0].clientY - rect.top;
-    } else {
-      x = e.clientX - rect.left;
-      y = e.clientY - rect.top;
-    }
-
+    const x = ('touches' in e ? e.touches[0].clientX : e.clientX) - rect.left;
+    const y = ('touches' in e ? e.touches[0].clientY : e.clientY) - rect.top;
     ctx.lineTo(x, y);
     ctx.stroke();
   };
 
-  const stopDrawing = () => {
-    setIsDrawing(false);
-  };
+  const stopDrawing = () => setIsDrawing(false);
 
   const clearSignature = () => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
-    if (canvas && ctx) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
+    if (canvas && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
   };
 
   const saveSignature = () => {
     if (!activeSignature || !canvasRef.current) return;
     const dataURL = canvasRef.current.toDataURL('image/png');
-    setSignatures(prev => ({
-      ...prev,
-      [activeSignature]: { ...prev[activeSignature], dataURL },
-    }));
+    setSignatures(prev => ({ ...prev, [activeSignature]: { ...prev[activeSignature], dataURL } }));
     closeSignatureModal();
   };
 
   const handleSave = async () => {
-    // Save all item statuses
     for (const [itemId, data] of Object.entries(itemStatuses)) {
       try {
         await fetch(`/api/checklist-items/${itemId}`, {
@@ -318,26 +323,35 @@ export default function ChecklistDetailPage() {
         console.error('Error saving item:', error);
       }
     }
-    alert('הדוח נשמר בהצלחה');
+    alert('הדוח נשמר בהצלחה. מספר דוח: ' + (reportNumber || 'יוקצה אוטומטית'));
   };
 
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = () => window.print();
+
+  const handleConfirmOpening = () => {
+    if (!checklist?.projectChapter?.project.name || !checklist?.mainContractor) {
+      alert('יש למלא שם פרויקט ושם קבלן.');
+      return;
+    }
+    if (!reportNumber) {
+      setReportNumber(String(Date.now()).slice(-6));
+    }
+    setOpeningLocked(true);
   };
 
   if (loading) {
     return (
-      <div dir="rtl" className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-xl text-gray-600">טוען...</div>
+      <div dir="rtl" className="min-h-screen bg-slate-100 flex items-center justify-center">
+        <div className="text-xl text-slate-600">טוען...</div>
       </div>
     );
   }
 
   if (!checklist) {
     return (
-      <div dir="rtl" className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div dir="rtl" className="min-h-screen bg-slate-100 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">רשימת תיוג לא נמצאה</h1>
+          <h1 className="text-2xl font-bold text-slate-800 mb-4">רשימת תיוג לא נמצאה</h1>
           <Link href="/" className="text-blue-600 hover:underline">חזור לדף הבית</Link>
         </div>
       </div>
@@ -349,171 +363,213 @@ export default function ChecklistDetailPage() {
   const stageNames = Object.keys(groupedItems);
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gray-100 pb-24">
+    <div dir="rtl" className="min-h-screen pb-24 print:pb-0" style={{ background: '#f3f5f8', fontFamily: 'Segoe UI, Arial Hebrew, Noto Sans Hebrew, Arial, sans-serif' }}>
       {/* Header */}
-      <header className="bg-gradient-to-l from-blue-900 to-blue-800 text-white p-4 sticky top-0 z-50 shadow-lg">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-lg font-bold">רשימת תיוג – {checklist.projectChapter?.chapter.name || ''} פרק {checklist.projectChapter?.chapter.code}</h1>
-          <div className="text-sm opacity-85 mt-1">
-            {checklist.projectChapter?.project.name} | דוח מס׳ {reportNumber || '-'}
-          </div>
+      <header className="sticky top-0 z-50 text-white p-4 shadow-md print:relative print:shadow-none" style={{ background: 'linear-gradient(90deg, #0d2b4e, #081b33)' }}>
+        <h1 className="text-lg font-bold m-0">רשימת תיוג – {checklist.projectChapter?.chapter.name} פרק {checklist.projectChapter?.chapter.code}</h1>
+        <div className="text-xs opacity-85 mt-1">בקרת איכות באתר | דוח מס׳ <span>{reportNumber || '-'}</span></div>
 
-          {/* Summary Bar */}
-          <div className="grid grid-cols-4 gap-2 mt-3">
-            <div className="bg-white/10 rounded-lg p-2 text-center">
-              <div className="text-lg font-bold">{stats.checked}/{stats.total}</div>
-              <div className="text-xs opacity-85">נבדקו</div>
-            </div>
-            <div className="bg-white/10 rounded-lg p-2 text-center">
-              <div className="text-lg font-bold text-green-300">{stats.ok}</div>
-              <div className="text-xs opacity-85">תקין</div>
-            </div>
-            <div className="bg-white/10 rounded-lg p-2 text-center">
-              <div className="text-lg font-bold text-red-300">{stats.not_ok}</div>
-              <div className="text-xs opacity-85">לא תקין</div>
-            </div>
-            <div className="bg-white/10 rounded-lg p-2 text-center">
-              <div className="text-lg font-bold text-yellow-300">{stats.pending}</div>
-              <div className="text-xs opacity-85">טרם נבדק</div>
-            </div>
+        {/* Summary Bar */}
+        <div className="grid grid-cols-4 gap-2 mt-3">
+          <div className="rounded-lg p-2 text-center" style={{ background: 'rgba(255,255,255,0.08)' }}>
+            <span className="text-lg font-bold block">{stats.checked}/{stats.total}</span>
+            <span className="text-xs opacity-85">נבדקו</span>
+          </div>
+          <div className="rounded-lg p-2 text-center" style={{ background: 'rgba(255,255,255,0.08)' }}>
+            <span className="text-lg font-bold block" style={{ color: '#7be09a' }}>{stats.ok}</span>
+            <span className="text-xs opacity-85">תקין</span>
+          </div>
+          <div className="rounded-lg p-2 text-center" style={{ background: 'rgba(255,255,255,0.08)' }}>
+            <span className="text-lg font-bold block" style={{ color: '#ff9b9b' }}>{stats.not_ok}</span>
+            <span className="text-xs opacity-85">לא תקין</span>
+          </div>
+          <div className="rounded-lg p-2 text-center" style={{ background: 'rgba(255,255,255,0.08)' }}>
+            <span className="text-lg font-bold block" style={{ color: '#ffe08a' }}>{stats.pending}</span>
+            <span className="text-xs opacity-85">טרם נבדק</span>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto p-4 space-y-4">
-        {/* Back Link */}
-        <Link
-          href={`/projects/${params.id}/building/${params.chapterId}`}
-          className="text-blue-600 hover:underline inline-block mb-2"
-        >
-          ← חזור לפרק
-        </Link>
+      <main className="max-w-4xl mx-auto p-3 space-y-4">
+        {/* Alerts */}
+        {stats.pending > 0 && (
+          <div className="rounded-lg p-3 text-sm" style={{ background: '#fff6df', color: '#7a5b00', border: '1px solid #c99a12' }}>
+            ⚠ קיימים סעיפים שטרם נבדקו.
+          </div>
+        )}
+        {(stats.not_ok > 0 || stats.openDef > 0) && controlResult === 'approved' && (
+          <div className="rounded-lg p-3 text-sm" style={{ background: '#fde9e9', color: '#8a1e1e', border: '1px solid #d23c3c' }}>
+            ⚠ קיימים סעיפים "לא תקין" או ליקויים פתוחים, אך תוצאת הבקרה סומנה "מאושר".
+          </div>
+        )}
 
-        {/* Report Details Card */}
-        <div className="bg-white rounded-xl shadow-lg p-5 border border-gray-200">
-          <h2 className="text-blue-700 font-semibold text-lg mb-4 pb-2 border-b-2 border-blue-100">פרטי הדוח</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">מספר דוח</label>
+        {/* פתיחת דוח Card */}
+        <section className="bg-white rounded-xl p-4 shadow-md border border-slate-200">
+          <h2 className="text-blue-700 font-semibold text-base mb-4 pb-2 border-b-2 border-blue-100 flex items-center gap-2">
+            פתיחת דוח
+            {openingLocked && <span className="text-xs font-bold rounded-md px-2 py-0.5" style={{ background: '#fff6df', color: '#7a5b00' }}>🔒 נעול</span>}
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-slate-500">מספר דוח</label>
               <input
                 type="text"
                 value={reportNumber}
                 onChange={(e) => setReportNumber(e.target.value)}
+                disabled={openingLocked}
                 placeholder="נוצר אוטומטית"
-                className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+                className="border rounded-lg p-2 text-sm disabled:bg-slate-100 disabled:text-slate-500"
+                style={{ borderColor: '#d7dee6' }}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">מבנה/קומה</label>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-slate-500">שם פרויקט</label>
               <input
                 type="text"
-                value={checklist.building || ''}
+                value={checklist.projectChapter?.project.name || ''}
                 disabled
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50"
+                className="border rounded-lg p-2 text-sm bg-slate-100 text-slate-500"
+                style={{ borderColor: '#d7dee6' }}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">קבלן</label>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-slate-500">שם קבלן</label>
               <input
                 type="text"
                 value={checklist.mainContractor || ''}
-                disabled
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">תאריך פתיחה</label>
-              <input
-                type="date"
-                value={checklist.openDate ? new Date(checklist.openDate).toISOString().split('T')[0] : ''}
-                disabled
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm bg-gray-50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">מיקום העבודה</label>
-              <input
-                type="text"
-                value={workLocation}
-                onChange={(e) => setWorkLocation(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">סוג העבודה</label>
-              <select
-                value={workType}
-                onChange={(e) => setWorkType(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-              >
-                <option value="">בחר סוג עבודה</option>
-                <option value="חפירה">חפירה</option>
-                <option value="מילוי">מילוי</option>
-                <option value="הידוק">הידוק</option>
-                <option value="פיתוח">פיתוח</option>
-                <option value="אחר">אחר</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">בקר איכות</label>
-              <input
-                type="text"
-                value={qcName}
-                onChange={(e) => setQcName(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">מנהל עבודה</label>
-              <input
-                type="text"
-                value={workManagerName}
-                onChange={(e) => setWorkManagerName(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+                disabled={openingLocked}
+                className="border rounded-lg p-2 text-sm disabled:bg-slate-100"
+                style={{ borderColor: '#d7dee6' }}
               />
             </div>
           </div>
-        </div>
+          {!openingLocked && (
+            <div className="mt-3 flex items-center gap-3 flex-wrap">
+              <button
+                onClick={handleConfirmOpening}
+                className="text-white font-bold rounded-lg px-4 py-2 text-sm"
+                style={{ background: '#2e9e4f' }}
+              >
+                ✓ אישור פרטי דוח
+              </button>
+              <span className="text-xs text-slate-500">לאחר אישור, מספר הדוח / שם הפרויקט / שם הקבלן ננעלים.</span>
+            </div>
+          )}
+          {openingLocked && (
+            <div className="mt-3 flex items-center gap-3">
+              <span className="rounded-lg px-4 py-2 text-sm font-bold" style={{ background: '#e3f7e8', color: '#2e9e4f' }}>
+                🔒 פרטי הדוח אושרו ונעולים
+              </span>
+            </div>
+          )}
+        </section>
+
+        {/* פרטי הדוח Card */}
+        <section className="bg-white rounded-xl p-4 shadow-md border border-slate-200">
+          <h2 className="text-blue-700 font-semibold text-base mb-4 pb-2 border-b-2 border-blue-100">פרטי הדוח</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-slate-500">מבנה/אזור</label>
+              <input type="text" value={structureArea} onChange={(e) => setStructureArea(e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-slate-500">מיקום העבודה</label>
+              <input type="text" value={workLocation} onChange={(e) => setWorkLocation(e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-slate-500">סוג העבודה</label>
+              <select value={workType} onChange={(e) => setWorkType(e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }}>
+                <option value="">בחר סוג עבודה</option>
+                <option value="חפירה">חפירה</option>
+                <option value="מילוי">מילוי</option>
+                <option value="הכנת קרקע">הכנת קרקע</option>
+                <option value="הידוק">הידוק</option>
+                <option value="עבודות פיתוח">עבודות פיתוח</option>
+                <option value="אחר">אחר</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-slate-500">תאריך פתיחת רת"ק</label>
+              <input type="date" value={checklist.openDate ? new Date(checklist.openDate).toISOString().split('T')[0] : ''} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} readOnly />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-slate-500">שם בקר איכות</label>
+              <input type="text" value={qcName} onChange={(e) => setQcName(e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-slate-500">שם מנהל עבודה</label>
+              <input type="text" value={workManagerName} onChange={(e) => setWorkManagerName(e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-slate-500">מספר תוכניות</label>
+              <input type="text" value={planNumber} onChange={(e) => setPlanNumber(e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-slate-500">מספר פרט</label>
+              <input type="text" value={detailNumber} onChange={(e) => setDetailNumber(e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-slate-500">חתכים מהתוכניות</label>
+              <input type="text" value={sectionsFromPlan} onChange={(e) => setSectionsFromPlan(e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-slate-500">סוג הקרקע</label>
+              <input type="text" value={soilType} onChange={(e) => setSoilType(e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-slate-500">סוג חומר המילוי</label>
+              <input type="text" value={fillMaterialType} onChange={(e) => setFillMaterialType(e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-slate-500">מעבדה מבצעת</label>
+              <input type="text" value={performingLab} onChange={(e) => setPerformingLab(e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} />
+            </div>
+          </div>
+        </section>
 
         {/* Checklist Stages */}
         {stageNames.map((stageName, stageIndex) => (
-          <div key={stageName} className="bg-white rounded-xl shadow-lg p-5 border border-gray-200">
-            <h2 className="text-blue-700 font-semibold text-lg mb-4 pb-2 border-b-2 border-blue-100 flex items-center gap-2">
-              <span className="bg-blue-900 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm">
+          <section key={stageName} className="bg-white rounded-xl p-4 shadow-md border border-slate-200">
+            <h2 className="text-blue-700 font-semibold text-base mb-4 pb-2 border-b-2 border-blue-100 flex items-center gap-2 flex-wrap">
+              <span className="text-white w-6 h-6 rounded-full flex items-center justify-center text-xs" style={{ background: '#0d2b4e' }}>
                 {stageIndex + 1}
               </span>
-              {stageName}
+              פרק {stageIndex + 1} – {stageName}
             </h2>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {groupedItems[stageName].map((item, itemIndex) => {
                 const itemData = itemStatuses[item.id] || { status: 'pending', date: '', approver: '', notes: '' };
                 const isNotOk = itemData.status === 'not_ok';
+                const itemNum = `${stageIndex + 1}.${itemIndex + 1}`;
 
                 return (
                   <div
                     key={item.id}
-                    className={`border rounded-xl p-4 ${isNotOk ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'}`}
+                    className="rounded-xl p-3 border"
+                    style={{
+                      background: isNotOk ? '#fde9e9' : '#fafbfc',
+                      borderColor: isNotOk ? '#d23c3c' : '#d7dee6',
+                    }}
                   >
                     {/* Item Header */}
-                    <div className="flex gap-3 items-start mb-3">
-                      <div className="bg-blue-900 text-white min-w-[40px] h-7 rounded-full flex items-center justify-center text-sm font-bold">
-                        {stageIndex + 1}.{itemIndex + 1}
+                    <div className="flex gap-2 items-start mb-2">
+                      <div className="text-white min-w-[36px] h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style={{ background: '#0d2b4e' }}>
+                        {itemNum}
                       </div>
-                      <div className="text-sm leading-relaxed pt-1">{item.description}</div>
+                      <div className="text-sm leading-relaxed pt-0.5">{item.description}</div>
                     </div>
 
                     {/* Status Buttons */}
-                    <div className="grid grid-cols-3 md:grid-cols-5 gap-2 mb-3">
+                    <div className="grid grid-cols-3 md:grid-cols-5 gap-1.5 mb-2">
                       {STATUS_OPTIONS.map(opt => (
                         <button
                           key={opt.value}
                           onClick={() => updateItemStatus(item.id, 'status', opt.value)}
-                          className={`border-2 rounded-lg py-2 px-1 text-xs font-bold transition-all ${
-                            itemData.status === opt.value
-                              ? opt.color
-                              : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-100'
+                          className={`border-2 rounded-lg py-2 px-1 text-xs font-bold transition-all text-center ${
+                            itemData.status === opt.value ? opt.activeClass : 'bg-white text-slate-700 hover:bg-slate-50'
                           }`}
+                          style={{ borderColor: itemData.status === opt.value ? undefined : '#d7dee6' }}
                         >
                           {opt.label}
                         </button>
@@ -521,402 +577,253 @@ export default function ChecklistDetailPage() {
                     </div>
 
                     {/* Meta Row */}
-                    <div className="grid grid-cols-2 gap-3 mb-3">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">תאריך</label>
+                    <div className="grid grid-cols-2 gap-2 mb-2">
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs text-slate-500">תאריך</label>
                         <input
                           type="date"
                           value={itemData.date}
                           onChange={(e) => updateItemStatus(item.id, 'date', e.target.value)}
-                          className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+                          className="border rounded-lg p-1.5 text-sm"
+                          style={{ borderColor: '#d7dee6' }}
                         />
                       </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">שם מאשר</label>
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs text-slate-500">שם מאשר</label>
                         <input
                           type="text"
                           value={itemData.approver}
                           onChange={(e) => updateItemStatus(item.id, 'approver', e.target.value)}
-                          className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+                          className="border rounded-lg p-1.5 text-sm"
+                          style={{ borderColor: '#d7dee6' }}
                         />
                       </div>
                     </div>
 
                     {/* Notes */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">
+                      <span className="text-xs text-slate-500 block mb-1">
                         הערות {isNotOk && <span className="text-red-600 font-bold">(חובה עבור סטטוס "לא תקין")</span>}
-                      </label>
+                      </span>
                       <textarea
                         value={itemData.notes}
                         onChange={(e) => updateItemStatus(item.id, 'notes', e.target.value)}
                         placeholder="הערות (לא רלוונטי)"
-                        className="w-full p-2 border border-gray-300 rounded-lg text-sm resize-y min-h-[40px]"
+                        className="w-full border rounded-lg p-2 text-sm resize-y min-h-[36px]"
+                        style={{ borderColor: '#d7dee6' }}
                       />
                     </div>
                   </div>
                 );
               })}
             </div>
-          </div>
+
+            {/* Stage 1 Approval */}
+            {stageIndex === 0 && (
+              <>
+                <div className="font-bold text-sm mt-4 mb-2" style={{ color: '#0d2b4e' }}>אישור תחילת עבודה</div>
+                <div className="flex gap-2 flex-wrap">
+                  {[
+                    { value: 'approved', label: 'מאושר' },
+                    { value: 'conditional', label: 'מאושר בתנאים' },
+                    { value: 'not_approved', label: 'לא מאושר' },
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setStage1Approval(opt.value)}
+                      className={`flex-1 min-w-[100px] border-2 rounded-lg py-2 px-2 text-sm font-bold ${
+                        stage1Approval === opt.value ? 'text-white' : 'bg-white text-slate-700'
+                      }`}
+                      style={{
+                        background: stage1Approval === opt.value ? '#1a5296' : undefined,
+                        borderColor: stage1Approval === opt.value ? '#1a5296' : '#d7dee6',
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* Stage 2 - Deficiencies & Lab Tests */}
+            {stageIndex === 1 && (
+              <>
+                <div className="font-bold text-sm mt-4 mb-2" style={{ color: '#0d2b4e' }}>ליקויים / פעולות מתקנות</div>
+                {deficiencies.length === 0 ? (
+                  <div className="text-slate-500 text-sm py-2">לא נרשמו ליקויים או פעולות מתקנות.</div>
+                ) : (
+                  <div className="space-y-3">
+                    {deficiencies.map((def, idx) => (
+                      <div key={def.id} className="border rounded-xl p-3 relative" style={{ borderColor: '#d7dee6', background: '#fafbfc' }}>
+                        <button onClick={() => removeDeficiency(def.id)} className="absolute left-2 top-2 rounded-md px-2 py-1 text-xs font-bold" style={{ background: '#fde9e9', color: '#d23c3c' }}>✕ מחק</button>
+                        <div className="inline-block text-white rounded-md px-2 py-0.5 text-xs font-bold mb-2" style={{ background: '#0d2b4e' }}>ליקוי מס׳ {idx + 1}</div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                          <div className="col-span-2 md:col-span-4 flex flex-col gap-1">
+                            <label className="text-xs text-slate-500">תיאור הליקוי</label>
+                            <textarea value={def.description} onChange={(e) => updateDeficiency(def.id, 'description', e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-xs text-slate-500">מיקום</label>
+                            <input type="text" value={def.location} onChange={(e) => updateDeficiency(def.id, 'location', e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} />
+                          </div>
+                          <div className="col-span-2 md:col-span-4 flex flex-col gap-1">
+                            <label className="text-xs text-slate-500">פעולה מתקנת</label>
+                            <textarea value={def.action} onChange={(e) => updateDeficiency(def.id, 'action', e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-xs text-slate-500">אחראי</label>
+                            <input type="text" value={def.responsible} onChange={(e) => updateDeficiency(def.id, 'responsible', e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-xs text-slate-500">תאריך יעד</label>
+                            <input type="date" value={def.dueDate} onChange={(e) => updateDeficiency(def.id, 'dueDate', e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-xs text-slate-500">סטטוס</label>
+                            <select value={def.status} onChange={(e) => updateDeficiency(def.id, 'status', e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }}>
+                              <option value="open">פתוח</option>
+                              <option value="in_progress">בטיפול</option>
+                              <option value="closed">סגור</option>
+                            </select>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-xs text-slate-500">תאריך סגירה</label>
+                            <input type="date" value={def.closeDate} onChange={(e) => updateDeficiency(def.id, 'closeDate', e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-xs text-slate-500">שם מאשר</label>
+                            <input type="text" value={def.approver} onChange={(e) => updateDeficiency(def.id, 'approver', e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} />
+                          </div>
+                          <div className="col-span-2 md:col-span-4 flex flex-col gap-1">
+                            <label className="text-xs text-slate-500">הערות</label>
+                            <textarea value={def.notes} onChange={(e) => updateDeficiency(def.id, 'notes', e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <button onClick={addDeficiency} className="mt-2 text-white font-bold rounded-lg px-4 py-2 text-sm" style={{ background: '#1a5296' }}>+ הוסף</button>
+
+                <div className="font-bold text-sm mt-4 mb-2" style={{ color: '#0d2b4e' }}>בדיקות מעבדה</div>
+                {labTests.length === 0 ? (
+                  <div className="text-slate-500 text-sm py-2">לא נרשמו בדיקות מעבדה.</div>
+                ) : (
+                  <div className="space-y-3">
+                    {labTests.map((test, idx) => (
+                      <div key={test.id} className="border rounded-xl p-3 relative" style={{ borderColor: '#d7dee6', background: '#fafbfc' }}>
+                        <button onClick={() => removeLabTest(test.id)} className="absolute left-2 top-2 rounded-md px-2 py-1 text-xs font-bold" style={{ background: '#fde9e9', color: '#d23c3c' }}>✕ מחק</button>
+                        <div className="inline-block text-white rounded-md px-2 py-0.5 text-xs font-bold mb-2" style={{ background: '#0d2b4e' }}>בדיקה מס׳ {idx + 1}</div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                          <div className="flex flex-col gap-1"><label className="text-xs text-slate-500">סוג בדיקה</label><input type="text" value={test.testType} onChange={(e) => updateLabTest(test.id, 'testType', e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} /></div>
+                          <div className="flex flex-col gap-1"><label className="text-xs text-slate-500">שכבה</label><input type="text" value={test.layer} onChange={(e) => updateLabTest(test.id, 'layer', e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} /></div>
+                          <div className="flex flex-col gap-1"><label className="text-xs text-slate-500">מיקום</label><input type="text" value={test.location} onChange={(e) => updateLabTest(test.id, 'location', e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} /></div>
+                          <div className="flex flex-col gap-1"><label className="text-xs text-slate-500">תאריך</label><input type="date" value={test.date} onChange={(e) => updateLabTest(test.id, 'date', e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} /></div>
+                          <div className="flex flex-col gap-1"><label className="text-xs text-slate-500">מספר דוח</label><input type="text" value={test.reportNumber} onChange={(e) => updateLabTest(test.id, 'reportNumber', e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} /></div>
+                          <div className="flex flex-col gap-1"><label className="text-xs text-slate-500">תוצאה</label><input type="text" value={test.result} onChange={(e) => updateLabTest(test.id, 'result', e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} /></div>
+                          <div className="col-span-2 flex flex-col gap-1"><label className="text-xs text-slate-500">הערה</label><textarea value={test.notes} onChange={(e) => updateLabTest(test.id, 'notes', e.target.value)} className="border rounded-lg p-2 text-sm" style={{ borderColor: '#d7dee6' }} /></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <button onClick={addLabTest} className="mt-2 text-white font-bold rounded-lg px-4 py-2 text-sm" style={{ background: '#1a5296' }}>+ הוסף בדיקה</button>
+              </>
+            )}
+          </section>
         ))}
 
-        {/* Deficiencies Section */}
-        <div className="bg-white rounded-xl shadow-lg p-5 border border-gray-200">
-          <h2 className="text-blue-700 font-semibold text-lg mb-4 pb-2 border-b-2 border-blue-100">
-            ליקויים / פעולות מתקנות
-          </h2>
-
-          {deficiencies.length === 0 ? (
-            <p className="text-gray-500 text-sm py-2">לא נרשמו ליקויים או פעולות מתקנות.</p>
-          ) : (
-            <div className="space-y-4">
-              {deficiencies.map((def, idx) => (
-                <div key={def.id} className="border border-gray-200 rounded-xl p-4 bg-gray-50 relative">
-                  <button
-                    onClick={() => removeDeficiency(def.id)}
-                    className="absolute left-2 top-2 bg-red-100 text-red-600 border-none rounded-lg px-2 py-1 text-xs font-bold hover:bg-red-200"
-                  >
-                    ✕ מחק
-                  </button>
-                  <div className="inline-block bg-blue-900 text-white rounded-lg px-3 py-1 text-xs font-bold mb-3">
-                    ליקוי מס׳ {idx + 1}
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="col-span-2 md:col-span-4">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">תיאור הליקוי</label>
-                      <textarea
-                        value={def.description}
-                        onChange={(e) => updateDeficiency(def.id, 'description', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">מיקום</label>
-                      <input
-                        type="text"
-                        value={def.location}
-                        onChange={(e) => updateDeficiency(def.id, 'location', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">אחראי</label>
-                      <input
-                        type="text"
-                        value={def.responsible}
-                        onChange={(e) => updateDeficiency(def.id, 'responsible', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">תאריך יעד</label>
-                      <input
-                        type="date"
-                        value={def.dueDate}
-                        onChange={(e) => updateDeficiency(def.id, 'dueDate', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">סטטוס</label>
-                      <select
-                        value={def.status}
-                        onChange={(e) => updateDeficiency(def.id, 'status', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                      >
-                        <option value="open">פתוח</option>
-                        <option value="in_progress">בטיפול</option>
-                        <option value="closed">סגור</option>
-                      </select>
-                    </div>
-                    <div className="col-span-2 md:col-span-4">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">פעולה מתקנת</label>
-                      <textarea
-                        value={def.action}
-                        onChange={(e) => updateDeficiency(def.id, 'action', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <button
-            onClick={addDeficiency}
-            className="mt-3 bg-blue-600 text-white border-none rounded-lg px-4 py-2 font-bold text-sm hover:bg-blue-700"
-          >
-            + הוסף ליקוי
-          </button>
-        </div>
-
-        {/* Lab Tests Section */}
-        <div className="bg-white rounded-xl shadow-lg p-5 border border-gray-200">
-          <h2 className="text-blue-700 font-semibold text-lg mb-4 pb-2 border-b-2 border-blue-100">
-            בדיקות מעבדה
-          </h2>
-
-          {labTests.length === 0 ? (
-            <p className="text-gray-500 text-sm py-2">לא נרשמו בדיקות מעבדה.</p>
-          ) : (
-            <div className="space-y-4">
-              {labTests.map((test, idx) => (
-                <div key={test.id} className="border border-gray-200 rounded-xl p-4 bg-gray-50 relative">
-                  <button
-                    onClick={() => removeLabTest(test.id)}
-                    className="absolute left-2 top-2 bg-red-100 text-red-600 border-none rounded-lg px-2 py-1 text-xs font-bold hover:bg-red-200"
-                  >
-                    ✕ מחק
-                  </button>
-                  <div className="inline-block bg-blue-900 text-white rounded-lg px-3 py-1 text-xs font-bold mb-3">
-                    בדיקה מס׳ {idx + 1}
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">סוג בדיקה</label>
-                      <input
-                        type="text"
-                        value={test.testType}
-                        onChange={(e) => updateLabTest(test.id, 'testType', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">שכבה</label>
-                      <input
-                        type="text"
-                        value={test.layer}
-                        onChange={(e) => updateLabTest(test.id, 'layer', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">מיקום</label>
-                      <input
-                        type="text"
-                        value={test.location}
-                        onChange={(e) => updateLabTest(test.id, 'location', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">תאריך</label>
-                      <input
-                        type="date"
-                        value={test.date}
-                        onChange={(e) => updateLabTest(test.id, 'date', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">מספר דוח</label>
-                      <input
-                        type="text"
-                        value={test.reportNumber}
-                        onChange={(e) => updateLabTest(test.id, 'reportNumber', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">תוצאה</label>
-                      <input
-                        type="text"
-                        value={test.result}
-                        onChange={(e) => updateLabTest(test.id, 'result', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">הערות</label>
-                      <input
-                        type="text"
-                        value={test.notes}
-                        onChange={(e) => updateLabTest(test.id, 'notes', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <button
-            onClick={addLabTest}
-            className="mt-3 bg-blue-600 text-white border-none rounded-lg px-4 py-2 font-bold text-sm hover:bg-blue-700"
-          >
-            + הוסף בדיקה
-          </button>
-        </div>
-
-        {/* Control Result */}
-        <div className="bg-white rounded-xl shadow-lg p-5 border border-gray-200">
-          <h2 className="text-blue-700 font-semibold text-lg mb-4 pb-2 border-b-2 border-blue-100">
-            תוצאת הבקרה
-          </h2>
-
-          <div className="grid grid-cols-3 gap-3 mb-4">
+        {/* תוצאת הבקרה */}
+        <section className="bg-white rounded-xl p-4 shadow-md border border-slate-200">
+          <h2 className="text-blue-700 font-semibold text-base mb-4 pb-2 border-b-2 border-blue-100">תוצאת הבקרה</h2>
+          <div className="text-slate-500 text-sm mb-2">אחוז השלמה: {stats.completion}% · ליקויים פתוחים: {stats.openDef} · ליקויים שנסגרו: {stats.closedDef}</div>
+          <div className="flex gap-2 flex-wrap mb-3">
             {[
-              { value: 'approved', label: 'מאושר', color: 'bg-green-500 border-green-600' },
-              { value: 'conditional', label: 'מאושר בתנאים', color: 'bg-yellow-500 border-yellow-600' },
-              { value: 'not_approved', label: 'לא מאושר', color: 'bg-red-500 border-red-600' },
+              { value: 'approved', label: 'מאושר' },
+              { value: 'conditional', label: 'מאושר בתנאים' },
+              { value: 'not_approved', label: 'לא מאושר' },
             ].map(opt => (
               <button
                 key={opt.value}
                 onClick={() => setControlResult(opt.value)}
-                className={`border-2 rounded-lg py-3 px-2 text-sm font-bold transition-all ${
-                  controlResult === opt.value
-                    ? `${opt.color} text-white`
-                    : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-100'
+                className={`flex-1 min-w-[100px] border-2 rounded-lg py-2 px-2 text-sm font-bold ${
+                  controlResult === opt.value ? 'text-white' : 'bg-white text-slate-700'
                 }`}
+                style={{
+                  background: controlResult === opt.value ? '#1a5296' : undefined,
+                  borderColor: controlResult === opt.value ? '#1a5296' : '#d7dee6',
+                }}
               >
                 {opt.label}
               </button>
             ))}
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-500 mb-1">הערות מסכמות</label>
-            <textarea
-              value={summaryNotes}
-              onChange={(e) => setSummaryNotes(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg text-sm resize-y min-h-[80px]"
-            />
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-slate-500">הערות מסכמות</label>
+            <textarea value={summaryNotes} onChange={(e) => setSummaryNotes(e.target.value)} className="border rounded-lg p-2 text-sm resize-y min-h-[60px]" style={{ borderColor: '#d7dee6' }} />
           </div>
-        </div>
+        </section>
 
-        {/* Signatures */}
-        <div className="bg-white rounded-xl shadow-lg p-5 border border-gray-200">
-          <h2 className="text-blue-700 font-semibold text-lg mb-4 pb-2 border-b-2 border-blue-100">
-            חתימות ואישורים
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* חתימות */}
+        <section className="bg-white rounded-xl p-4 shadow-md border border-slate-200">
+          <h2 className="text-blue-700 font-semibold text-base mb-4 pb-2 border-b-2 border-blue-100">חתימות ואישורים</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {[
               { key: 'contractor', label: '1. קבלן' },
               { key: 'qc', label: '2. בקרת איכות' },
               { key: 'supervision', label: '3. פיקוח' },
             ].map(sig => (
-              <div key={sig.key} className="border border-gray-200 rounded-xl p-4">
-                <h3 className="font-bold text-sm mb-3">{sig.label}</h3>
-                <div className="grid grid-cols-2 gap-2 mb-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">שם</label>
-                    <input
-                      type="text"
-                      value={signatures[sig.key].name}
-                      onChange={(e) => setSignatures(prev => ({
-                        ...prev,
-                        [sig.key]: { ...prev[sig.key], name: e.target.value },
-                      }))}
-                      className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                    />
+              <div key={sig.key} className="border rounded-xl p-3" style={{ borderColor: '#d7dee6' }}>
+                <h3 className="font-bold text-sm mb-2">{sig.label}</h3>
+                <div className="grid grid-cols-2 gap-2 mb-2">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-slate-500">שם</label>
+                    <input type="text" value={signatures[sig.key].name} onChange={(e) => setSignatures(prev => ({ ...prev, [sig.key]: { ...prev[sig.key], name: e.target.value } }))} className="border rounded-lg p-1.5 text-sm" style={{ borderColor: '#d7dee6' }} />
                   </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">תפקיד</label>
-                    <input
-                      type="text"
-                      value={signatures[sig.key].role}
-                      onChange={(e) => setSignatures(prev => ({
-                        ...prev,
-                        [sig.key]: { ...prev[sig.key], role: e.target.value },
-                      }))}
-                      className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                    />
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-slate-500">תפקיד</label>
+                    <input type="text" value={signatures[sig.key].role} onChange={(e) => setSignatures(prev => ({ ...prev, [sig.key]: { ...prev[sig.key], role: e.target.value } }))} className="border rounded-lg p-1.5 text-sm" style={{ borderColor: '#d7dee6' }} />
                   </div>
                 </div>
-
                 {signatures[sig.key].dataURL ? (
-                  <div className="border border-dashed border-gray-300 rounded-lg p-2 bg-white">
-                    <img
-                      src={signatures[sig.key].dataURL}
-                      alt="חתימה"
-                      className="h-16 mx-auto object-contain"
-                    />
-                    <button
-                      onClick={() => openSignatureModal(sig.key)}
-                      className="w-full mt-2 text-blue-600 text-xs hover:underline"
-                    >
-                      שנה חתימה
-                    </button>
+                  <div className="border border-dashed rounded-lg p-2 bg-white" style={{ borderColor: '#d7dee6' }}>
+                    <img src={signatures[sig.key].dataURL} alt="חתימה" className="h-16 mx-auto object-contain" />
+                    <button onClick={() => openSignatureModal(sig.key)} className="w-full mt-1 text-blue-600 text-xs hover:underline">שנה חתימה</button>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => openSignatureModal(sig.key)}
-                    className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 text-sm hover:bg-gray-50"
-                  >
-                    לחץ לחתימה
-                  </button>
+                  <button onClick={() => openSignatureModal(sig.key)} className="w-full py-3 border-2 border-dashed rounded-lg text-slate-500 text-sm hover:bg-slate-50" style={{ borderColor: '#d7dee6' }}>לחץ לחתימה</button>
                 )}
               </div>
             ))}
           </div>
-        </div>
+        </section>
       </main>
 
       {/* Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 flex gap-2 overflow-x-auto z-50 shadow-lg print:hidden">
-        <button
-          onClick={handleSave}
-          className="flex-1 bg-blue-600 text-white border-none rounded-lg py-3 px-4 font-bold text-sm whitespace-nowrap hover:bg-blue-700"
-        >
-          💾 שמור דוח
-        </button>
-        <button
-          onClick={handlePrint}
-          className="flex-1 bg-green-600 text-white border-none rounded-lg py-3 px-4 font-bold text-sm whitespace-nowrap hover:bg-green-700"
-        >
-          🖨 הדפס / PDF
-        </button>
-        <button
-          onClick={() => router.push(`/projects/${params.id}/building/${params.chapterId}`)}
-          className="flex-1 bg-gray-500 text-white border-none rounded-lg py-3 px-4 font-bold text-sm whitespace-nowrap hover:bg-gray-600"
-        >
-          חזור
-        </button>
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-2 flex gap-1.5 overflow-x-auto z-50 shadow-lg print:hidden" style={{ borderColor: '#d7dee6' }}>
+        <button onClick={handleSave} className="flex-1 text-white rounded-lg py-2.5 px-3 font-bold text-sm whitespace-nowrap" style={{ background: '#1a5296' }}>💾 שמור דוח</button>
+        <button onClick={() => router.push(`/projects/${params.id}/building/${params.chapterId}`)} className="flex-1 text-white rounded-lg py-2.5 px-3 font-bold text-sm whitespace-nowrap" style={{ background: '#0d2b4e' }}>📋 דוח חדש</button>
+        <button className="flex-1 text-white rounded-lg py-2.5 px-3 font-bold text-sm whitespace-nowrap" style={{ background: '#5a6b7d' }}>⧉ שכפל דוח</button>
+        <button className="flex-1 text-white rounded-lg py-2.5 px-3 font-bold text-sm whitespace-nowrap" style={{ background: '#d23c3c' }}>🗑 נקה טופס</button>
+        <button className="flex-1 text-white rounded-lg py-2.5 px-3 font-bold text-sm whitespace-nowrap" style={{ background: '#7a5b12' }}>📂 רשימת קודמים</button>
+        <button onClick={handlePrint} className="flex-1 text-white rounded-lg py-2.5 px-3 font-bold text-sm whitespace-nowrap" style={{ background: '#2e9e4f' }}>🖨 הדפס / PDF</button>
       </div>
 
       {/* Signature Modal */}
       {activeSignature && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">חתימה</h3>
-            <div className="border-2 border-gray-300 rounded-lg mb-4 touch-none">
-              <canvas
-                ref={canvasRef}
-                width={350}
-                height={200}
-                className="w-full bg-white rounded-lg cursor-crosshair"
-                onMouseDown={startDrawing}
-                onMouseMove={draw}
-                onMouseUp={stopDrawing}
-                onMouseLeave={stopDrawing}
-                onTouchStart={startDrawing}
-                onTouchMove={draw}
-                onTouchEnd={stopDrawing}
-              />
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
+          <div className="bg-white rounded-xl shadow-2xl p-5 w-full max-w-md">
+            <h3 className="text-lg font-bold mb-4" style={{ color: '#0d2b4e' }}>חתימה</h3>
+            <div className="border-2 border-dashed rounded-lg mb-4 touch-none" style={{ borderColor: '#d7dee6' }}>
+              <canvas ref={canvasRef} width={350} height={100} className="w-full bg-white rounded-lg cursor-crosshair block"
+                onMouseDown={startDrawing} onMouseMove={draw} onMouseUp={stopDrawing} onMouseLeave={stopDrawing}
+                onTouchStart={startDrawing} onTouchMove={draw} onTouchEnd={stopDrawing} />
             </div>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={clearSignature}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-              >
-                נקה
-              </button>
-              <button
-                onClick={closeSignatureModal}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
-              >
-                ביטול
-              </button>
-              <button
-                onClick={saveSignature}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                שמור
-              </button>
+            <div className="flex gap-2 justify-end flex-wrap">
+              <button onClick={clearSignature} className="bg-white border rounded-lg px-3 py-1.5 text-xs" style={{ borderColor: '#d7dee6' }}>נקה חתימה</button>
+              <button onClick={closeSignatureModal} className="bg-white border rounded-lg px-3 py-1.5 text-xs" style={{ borderColor: '#d7dee6' }}>ביטול</button>
+              <button onClick={saveSignature} className="text-white rounded-lg px-3 py-1.5 text-xs font-bold" style={{ background: '#1a5296' }}>שמור</button>
             </div>
           </div>
         </div>
