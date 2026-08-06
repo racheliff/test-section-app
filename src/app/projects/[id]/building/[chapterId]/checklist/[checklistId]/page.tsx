@@ -531,13 +531,13 @@ export default function ChecklistDetailPage() {
         {stageNames.map((stageName, stageIndex) => (
           <section key={stageName} className="bg-white rounded-xl p-4 shadow-md border border-slate-200">
             <h2 className="text-blue-700 font-semibold text-base mb-4 pb-2 border-b-2 border-blue-100 flex items-center gap-2 flex-wrap">
-              <span className="text-white w-6 h-6 rounded-full flex items-center justify-center text-xs" style={{ background: '#0d2b4e' }}>
+              <span className="text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: '#1a5296' }}>
                 {stageIndex + 1}
               </span>
               פרק {stageIndex + 1} – {stageName}
             </h2>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               {groupedItems[stageName].map((item, itemIndex) => {
                 const itemData = itemStatuses[item.id] || { status: 'pending', date: '', approver: '', notes: '' };
                 const isNotOk = itemData.status === 'not_ok';
@@ -546,28 +546,34 @@ export default function ChecklistDetailPage() {
                 return (
                   <div
                     key={item.id}
-                    className="rounded-xl p-3 border"
+                    className="rounded-xl p-4 border-2 transition-all"
                     style={{
                       background: isNotOk ? '#fde9e9' : '#fafbfc',
-                      borderColor: isNotOk ? '#d23c3c' : '#d7dee6',
+                      borderColor: isNotOk ? '#d23c3c' : '#e5e7eb',
                     }}
                   >
                     {/* Item Header */}
-                    <div className="flex gap-2 items-start mb-2">
-                      <div className="text-white min-w-[36px] h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style={{ background: '#0d2b4e' }}>
+                    <div className="flex gap-3 items-start mb-4">
+                      <div
+                        className="text-white min-w-[42px] h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-sm"
+                        style={{ background: '#0d2b4e' }}
+                      >
                         {itemNum}
                       </div>
-                      <div className="text-sm leading-relaxed pt-0.5">{item.description}</div>
+                      <div className="flex-1">
+                        <div className="text-sm leading-relaxed font-medium text-slate-800">{item.description}</div>
+                        <div className="text-xs text-slate-400 mt-1">אחראי: {item.responsible}</div>
+                      </div>
                     </div>
 
-                    {/* Status Buttons */}
-                    <div className="grid grid-cols-3 md:grid-cols-5 gap-1.5 mb-2">
+                    {/* Status Buttons - Cleaner Layout */}
+                    <div className="grid grid-cols-5 gap-2 mb-4">
                       {STATUS_OPTIONS.map(opt => (
                         <button
                           key={opt.value}
                           onClick={() => updateItemStatus(item.id, 'status', opt.value)}
-                          className={`border-2 rounded-lg py-2 px-1 text-xs font-bold transition-all text-center ${
-                            itemData.status === opt.value ? opt.activeClass : 'bg-white text-slate-700 hover:bg-slate-50'
+                          className={`border-2 rounded-lg py-2.5 px-1 text-xs font-bold transition-all text-center shadow-sm ${
+                            itemData.status === opt.value ? opt.activeClass : 'bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300'
                           }`}
                           style={{ borderColor: itemData.status === opt.value ? undefined : '#d7dee6' }}
                         >
@@ -576,41 +582,45 @@ export default function ChecklistDetailPage() {
                       ))}
                     </div>
 
-                    {/* Meta Row */}
-                    <div className="grid grid-cols-2 gap-2 mb-2">
-                      <div className="flex flex-col gap-1">
-                        <label className="text-xs text-slate-500">תאריך</label>
+                    {/* Meta Row - Better Layout */}
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-semibold text-slate-500">תאריך</label>
                         <input
                           type="date"
                           value={itemData.date}
                           onChange={(e) => updateItemStatus(item.id, 'date', e.target.value)}
-                          className="border rounded-lg p-1.5 text-sm"
-                          style={{ borderColor: '#d7dee6' }}
+                          className="border-2 rounded-lg p-2 text-sm bg-white focus:border-blue-400 focus:outline-none transition-colors"
+                          style={{ borderColor: '#e5e7eb' }}
                         />
                       </div>
-                      <div className="flex flex-col gap-1">
-                        <label className="text-xs text-slate-500">שם מאשר</label>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-semibold text-slate-500">שם מאשר</label>
                         <input
                           type="text"
                           value={itemData.approver}
                           onChange={(e) => updateItemStatus(item.id, 'approver', e.target.value)}
-                          className="border rounded-lg p-1.5 text-sm"
-                          style={{ borderColor: '#d7dee6' }}
+                          placeholder="הזן שם"
+                          className="border-2 rounded-lg p-2 text-sm bg-white focus:border-blue-400 focus:outline-none transition-colors"
+                          style={{ borderColor: '#e5e7eb' }}
                         />
                       </div>
                     </div>
 
-                    {/* Notes */}
+                    {/* Notes - Cleaner */}
                     <div>
-                      <span className="text-xs text-slate-500 block mb-1">
-                        הערות {isNotOk && <span className="text-red-600 font-bold">(חובה עבור סטטוס "לא תקין")</span>}
-                      </span>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <label className="text-xs font-semibold text-slate-500">הערות</label>
+                        {isNotOk && (
+                          <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded">חובה!</span>
+                        )}
+                      </div>
                       <textarea
                         value={itemData.notes}
                         onChange={(e) => updateItemStatus(item.id, 'notes', e.target.value)}
-                        placeholder="הערות (לא רלוונטי)"
-                        className="w-full border rounded-lg p-2 text-sm resize-y min-h-[36px]"
-                        style={{ borderColor: '#d7dee6' }}
+                        placeholder="הוסף הערות במידת הצורך..."
+                        className="w-full border-2 rounded-lg p-2.5 text-sm resize-y min-h-[50px] bg-white focus:border-blue-400 focus:outline-none transition-colors"
+                        style={{ borderColor: '#e5e7eb' }}
                       />
                     </div>
                   </div>
