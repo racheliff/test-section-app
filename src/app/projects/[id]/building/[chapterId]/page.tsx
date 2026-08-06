@@ -668,12 +668,12 @@ export default function ChapterDetailPage() {
                                 return (
                                   <div
                                     key={item.id}
-                                    className={`rounded-xl p-4 border-2 transition-all ${
+                                    className={`rounded-lg p-4 border transition-all ${
                                       item.status === 'ok' || item.status === 'corrected'
                                         ? 'bg-emerald-50 border-emerald-300'
                                         : item.status === 'not_ok'
                                         ? 'bg-red-50 border-red-300'
-                                        : 'bg-white border-gray-200 hover:border-gray-300'
+                                        : 'bg-white border-gray-300'
                                     }`}
                                   >
                                     {/* Item Header */}
@@ -695,53 +695,53 @@ export default function ChapterDetailPage() {
                                     </div>
 
                                     {/* Status Buttons */}
-                                    <div className="grid grid-cols-5 gap-1.5 mb-3">
+                                    <div className="grid grid-cols-5 gap-2 mb-4">
                                       <button
                                         onClick={() => handleUpdateItem(item.id, 'status', 'pending')}
-                                        className={`border-2 rounded-lg py-2 text-xs font-bold transition-all ${
+                                        className={`border rounded-lg p-2.5 text-sm font-medium transition-all ${
                                           (item.status || 'pending') === 'pending'
                                             ? 'bg-amber-100 border-amber-400 text-amber-800'
-                                            : 'bg-white text-gray-600 border-gray-200 hover:bg-amber-50'
+                                            : 'bg-white text-gray-600 border-gray-300 hover:bg-amber-50'
                                         }`}
                                       >
                                         טרם נבדק
                                       </button>
                                       <button
                                         onClick={() => handleUpdateItem(item.id, 'status', 'ok')}
-                                        className={`border-2 rounded-lg py-2 text-xs font-bold transition-all ${
+                                        className={`border rounded-lg p-2.5 text-sm font-medium transition-all ${
                                           item.status === 'ok'
-                                            ? 'bg-emerald-500 border-emerald-600 text-white'
-                                            : 'bg-white text-gray-600 border-gray-200 hover:bg-emerald-50'
+                                            ? 'bg-emerald-500 border-emerald-500 text-white'
+                                            : 'bg-white text-gray-600 border-gray-300 hover:bg-emerald-50'
                                         }`}
                                       >
                                         תקין
                                       </button>
                                       <button
                                         onClick={() => handleUpdateItem(item.id, 'status', 'not_ok')}
-                                        className={`border-2 rounded-lg py-2 text-xs font-bold transition-all ${
+                                        className={`border rounded-lg p-2.5 text-sm font-medium transition-all ${
                                           item.status === 'not_ok'
-                                            ? 'bg-red-500 border-red-600 text-white'
-                                            : 'bg-white text-gray-600 border-gray-200 hover:bg-red-50'
+                                            ? 'bg-red-500 border-red-500 text-white'
+                                            : 'bg-white text-gray-600 border-gray-300 hover:bg-red-50'
                                         }`}
                                       >
                                         לא תקין
                                       </button>
                                       <button
                                         onClick={() => handleUpdateItem(item.id, 'status', 'na')}
-                                        className={`border-2 rounded-lg py-2 text-xs font-bold transition-all ${
+                                        className={`border rounded-lg p-2.5 text-sm font-medium transition-all ${
                                           item.status === 'na'
-                                            ? 'bg-slate-400 border-slate-500 text-white'
-                                            : 'bg-white text-gray-600 border-gray-200 hover:bg-slate-50'
+                                            ? 'bg-slate-400 border-slate-400 text-white'
+                                            : 'bg-white text-gray-600 border-gray-300 hover:bg-slate-50'
                                         }`}
                                       >
                                         לא רלוונטי
                                       </button>
                                       <button
                                         onClick={() => handleUpdateItem(item.id, 'status', 'corrected')}
-                                        className={`border-2 rounded-lg py-2 text-xs font-bold transition-all ${
+                                        className={`border rounded-lg p-2.5 text-sm font-medium transition-all ${
                                           item.status === 'corrected'
-                                            ? 'bg-violet-500 border-violet-600 text-white'
-                                            : 'bg-white text-gray-600 border-gray-200 hover:bg-violet-50'
+                                            ? 'bg-violet-500 border-violet-500 text-white'
+                                            : 'bg-white text-gray-600 border-gray-300 hover:bg-violet-50'
                                         }`}
                                       >
                                         תוקן
@@ -749,30 +749,30 @@ export default function ChapterDetailPage() {
                                     </div>
 
                                     {/* Meta Fields */}
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                      <div className="flex flex-col gap-1">
-                                        <label className="text-xs font-semibold text-gray-500">תאריך</label>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                      <div>
+                                        <label className="block text-sm font-medium text-gray-500 mb-1">תאריך</label>
                                         <input
                                           type="date"
                                           value={item.date ? new Date(item.date).toISOString().split('T')[0] : ''}
                                           onChange={(e) => handleUpdateItem(item.id, 'date', e.target.value)}
-                                          className="border-2 rounded-lg p-2 text-sm bg-white border-gray-200 focus:border-blue-400 focus:outline-none"
+                                          className="w-full p-2.5 border border-gray-300 rounded-lg text-sm"
                                         />
                                       </div>
-                                      <div className="flex flex-col gap-1">
-                                        <label className="text-xs font-semibold text-gray-500">שם מאשר</label>
+                                      <div>
+                                        <label className="block text-sm font-medium text-gray-500 mb-1">שם מאשר</label>
                                         <input
                                           type="text"
                                           value={item.name || ''}
                                           onChange={(e) => handleUpdateItem(item.id, 'name', e.target.value)}
                                           placeholder="הזן שם"
-                                          className="border-2 rounded-lg p-2 text-sm bg-white border-gray-200 focus:border-blue-400 focus:outline-none"
+                                          className="w-full p-2.5 border border-gray-300 rounded-lg text-sm"
                                         />
                                       </div>
-                                      <div className="flex flex-col gap-1">
-                                        <label className="text-xs font-semibold text-gray-500">חתימה</label>
+                                      <div>
+                                        <label className="block text-sm font-medium text-gray-500 mb-1">חתימה</label>
                                         {item.signature ? (
-                                          <div className="flex items-center gap-2 border-2 rounded-lg p-1.5 bg-white border-gray-200">
+                                          <div className="flex items-center gap-2 p-2.5 border border-gray-300 rounded-lg bg-white">
                                             <img src={item.signature} alt="חתימה" className="h-6 object-contain" />
                                             <button
                                               onClick={() => openSignatureModal(item.id, checklist.id)}
@@ -784,20 +784,20 @@ export default function ChapterDetailPage() {
                                         ) : (
                                           <button
                                             onClick={() => openSignatureModal(item.id, checklist.id)}
-                                            className="border-2 border-dashed rounded-lg p-2 text-sm text-blue-600 hover:bg-blue-50 border-blue-300"
+                                            className="w-full p-2.5 border border-dashed border-blue-300 rounded-lg text-sm text-blue-600 hover:bg-blue-50"
                                           >
                                             לחץ לחתימה
                                           </button>
                                         )}
                                       </div>
-                                      <div className="flex flex-col gap-1">
-                                        <label className="text-xs font-semibold text-gray-500">הערות</label>
+                                      <div>
+                                        <label className="block text-sm font-medium text-gray-500 mb-1">הערות</label>
                                         <input
                                           type="text"
                                           value={item.notes || ''}
                                           onChange={(e) => handleUpdateItem(item.id, 'notes', e.target.value)}
                                           placeholder="הוסף הערה..."
-                                          className="border-2 rounded-lg p-2 text-sm bg-white border-gray-200 focus:border-blue-400 focus:outline-none"
+                                          className="w-full p-2.5 border border-gray-300 rounded-lg text-sm"
                                         />
                                       </div>
                                     </div>
