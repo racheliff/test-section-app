@@ -146,6 +146,40 @@ export default function ChapterDetailPage() {
     }
   };
 
+  // עדכון מקומי בלבד (לשדות טקסט - בזמן הקלדה)
+  const handleLocalUpdate = (itemId: string, field: string, value: string) => {
+    setChecklists(prev => prev.map(checklist => ({
+      ...checklist,
+      items: checklist.items.map(i =>
+        i.id === itemId ? { ...i, [field]: value } : i
+      ),
+    })));
+  };
+
+  // שמירה ל-DB (נקרא ב-onBlur או בלחיצה על כפתור)
+  const handleSaveItem = async (itemId: string) => {
+    try {
+      const item = checklists.flatMap(c => c.items).find(i => i.id === itemId);
+      if (!item) return;
+
+      await fetch(`/api/checklist-items/${itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: item.name,
+          signature: item.signature,
+          date: item.date,
+          notes: item.notes,
+          isCompleted: item.isCompleted,
+          status: item.status || 'pending',
+        }),
+      });
+    } catch (error) {
+      console.error('Error saving item:', error);
+    }
+  };
+
+  // עדכון מיידי (לכפתורים, תאריכים, חתימות)
   const handleUpdateItem = async (itemId: string, field: string, value: string | boolean) => {
     try {
       const item = checklists.flatMap(c => c.items).find(i => i.id === itemId);
@@ -764,7 +798,8 @@ export default function ChapterDetailPage() {
                                         <input
                                           type="text"
                                           value={item.name || ''}
-                                          onChange={(e) => handleUpdateItem(item.id, 'name', e.target.value)}
+                                          onChange={(e) => handleLocalUpdate(item.id, 'name', e.target.value)}
+                                          onBlur={() => handleSaveItem(item.id)}
                                           placeholder="הזן שם"
                                           className="w-full p-2.5 border border-gray-300 rounded-lg text-sm"
                                         />
@@ -795,7 +830,8 @@ export default function ChapterDetailPage() {
                                         <input
                                           type="text"
                                           value={item.notes || ''}
-                                          onChange={(e) => handleUpdateItem(item.id, 'notes', e.target.value)}
+                                          onChange={(e) => handleLocalUpdate(item.id, 'notes', e.target.value)}
+                                          onBlur={() => handleSaveItem(item.id)}
                                           placeholder="הוסף הערה..."
                                           className="w-full p-2.5 border border-gray-300 rounded-lg text-sm"
                                         />
