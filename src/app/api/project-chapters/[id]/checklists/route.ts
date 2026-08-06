@@ -1,30 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-const DEFAULT_CHECKLIST_ITEMS = [
-  { workStage: 'בקרה מקדימה', description: 'בדיקת ניקיון ויישור התשתית', responsible: 'קבלן', sortOrder: 1 },
-  { workStage: 'בקרה מקדימה', description: 'בדיקת חומרים מאושרים ועבודה לפי תוכנית עדכנית', responsible: 'בקרת איכות', sortOrder: 2 },
-  { workStage: 'קונסטרוקציה', description: 'סימון מיקום קירות/תקרות לפי', responsible: 'מודד/קבלן', sortOrder: 3 },
-  { workStage: 'קונסטרוקציה', description: 'בדיקת פרופילים (מרחקים, עיגון, יישור)', responsible: 'קבלן', sortOrder: 4 },
-  { workStage: 'קונסטרוקציה', description: 'בדיקת חיזוקים במקומות נדרשים', responsible: 'קבלן/בקרת איכות', sortOrder: 5 },
-  { workStage: "סגירת צד א'", description: "בדיקת לוחות גבס צד א' (קיבוע, מרווחים, ברגים)", responsible: 'קבלן', sortOrder: 6 },
-  { workStage: 'מיזוג אויר', description: 'בדיקת תעלות על פי תוכנית', responsible: 'קבלן מערכות', sortOrder: 7 },
-  { workStage: 'מיזוג אויר', description: 'בדיקת אביזרים, דמפרים, מפוחים, VRF', responsible: 'קבלן מערכות', sortOrder: 8 },
-  { workStage: 'מיזוג אויר', description: 'צנרת גז לאחר טסט+אישור קבלן', responsible: 'קבלן מערכות', sortOrder: 9 },
-  { workStage: 'מיזוג אויר', description: 'מיקום פתחים על פי תוכנית תקרה', responsible: 'קבלן מערכות', sortOrder: 10 },
-  { workStage: 'חשמל + תקשורת', description: 'בדיקת צנרת על פי מפרט', responsible: 'קבלן מערכות', sortOrder: 11 },
-  { workStage: 'חשמל + תקשורת', description: 'מיקום נקודות על פי תוכנית', responsible: 'קבלן מערכות', sortOrder: 12 },
-  { workStage: 'אינסטלציה - מים', description: 'קיבוע צנרת על פי תקן', responsible: 'קבלן מערכות', sortOrder: 13 },
-  { workStage: 'אינסטלציה - מים', description: 'בדיקת צנרת על פי מפרט', responsible: 'קבלן מערכות', sortOrder: 14 },
-  { workStage: 'אינסטלציה - מים', description: 'מיקום נקודות על פי תוכנית', responsible: 'קבלן מערכות', sortOrder: 15 },
-  { workStage: 'אינסטלציה - מים', description: 'קיבוע צנרת על פי תקן', responsible: 'קבלן מערכות', sortOrder: 16 },
-  { workStage: 'בידוד', description: 'התקנת בידוד אקוסטי לפי מפרט (צמר זכוכית 2")', responsible: 'קבלן', sortOrder: 17 },
-  { workStage: 'אישור לפני סגירה', description: "אישור פיקוח ובקרת איכות לסגירת צד ב'", responsible: 'פיקוח / בקרת איכות', sortOrder: 18 },
-  { workStage: "סגירת צד ב'", description: "בדיקת סגירת צד ב' לאחר אישור מערכות", responsible: 'קבלן', sortOrder: 19 },
-  { workStage: 'גמר', description: 'בדיקת שפכטל, סרטים וחיבורים', responsible: 'קבלן', sortOrder: 20 },
-  { workStage: 'גמר', description: 'בדיקת יישור ואיכות פני שטח', responsible: 'בקרת איכות', sortOrder: 21 },
-  { workStage: 'מסירה', description: 'בדיקת מסירה סופית ותיקונים', responsible: 'פיקוח / בקרת איכות', sortOrder: 22 },
+// פרק 01 - עבודות עפר
+const CHAPTER_01_ITEMS = [
+  // בקרה מקדימה - 1 פרק
+  { workStage: 'בקרה מקדימה', description: 'קיימות תוכניות חפירה, מילוי, מפלסים ותשתיות מאושרות', responsible: 'קבלן', sortOrder: 1 },
+  { workStage: 'בקרה מקדימה', description: 'גבולות העבודה, הצירים והמפלסים סומנו ואומתו', responsible: 'קבלן', sortOrder: 2 },
+  { workStage: 'בקרה מקדימה', description: 'תשתיות קיימות אותרו, סומנו והוגנו', responsible: 'קבלן', sortOrder: 3 },
+  { workStage: 'בקרה מקדימה', description: 'סוגי הקרקע וחומר המילוי תואמים למסמכים המאושרים', responsible: 'בקרת איכות', sortOrder: 4 },
+  { workStage: 'בקרה מקדימה', description: 'ציוד הביצוע והידוק מתאים לסוג העבודה', responsible: 'קבלן', sortOrder: 5 },
+  { workStage: 'בקרה מקדימה', description: 'תוספת ניקוז זמני, גישה ובטיחות החפירה', responsible: 'קבלן', sortOrder: 6 },
+  // בקרה שוטפת - 2 פרק
+  { workStage: 'בקרה שוטפת', description: 'החפירה מתבצעת למידות, לשיפועים ולמפלסים הנדרשים', responsible: 'קבלן', sortOrder: 7 },
+  { workStage: 'בקרה שוטפת', description: 'דפנות החפירה, התמיכות והשיפועים נשמרים יציבים', responsible: 'קבלן', sortOrder: 8 },
+  { workStage: 'בקרה שוטפת', description: 'קרקעית בלתי מתאימה מורחקת ומטופלת באישור', responsible: 'בקרת איכות', sortOrder: 9 },
+  { workStage: 'בקרה שוטפת', description: 'חומר המילוי מפוזר בשכבות ובעובי הנדרש', responsible: 'קבלן', sortOrder: 10 },
+  { workStage: 'בקרה שוטפת', description: 'הלחויות והידוק מבוקרים בהתאם למפרט', responsible: 'בקרת איכות', sortOrder: 11 },
+  { workStage: 'בקרה שוטפת', description: 'מבוצעות בדיקות צפיפות/הידוק במדירות שנקבעה', responsible: 'בקרת איכות', sortOrder: 12 },
+  { workStage: 'בקרה שוטפת', description: 'שמירת הפרדה בין סוגי מילוי ותשתיות', responsible: 'קבלן', sortOrder: 13 },
+  { workStage: 'בקרה שוטפת', description: 'המפלסים והשיפועים נבדקים במהלך הביצוע', responsible: 'קבלן', sortOrder: 14 },
+  // אישור לפני מסירה - 3 פרק
+  { workStage: 'אישור לפני מסירה', description: 'מידות, מפלסים ושיפועים סופיים נבדקו', responsible: 'בקרת איכות', sortOrder: 15 },
+  { workStage: 'אישור לפני מסירה', description: 'תוצאות בדיקות הידוק התקבלו ונמצאו מתאימות', responsible: 'בקרת איכות', sortOrder: 16 },
+  { workStage: 'אישור לפני מסירה', description: 'לא נותרו אזורים רופפים, שקועים או מוצפים', responsible: 'קבלן', sortOrder: 17 },
+  { workStage: 'אישור לפני מסירה', description: 'בינוי השטח והחיבורים לתשתיות הושלמו', responsible: 'קבלן', sortOrder: 18 },
+  { workStage: 'אישור לפני מסירה', description: 'ליקויים תוקנו ונבדקו מחדש', responsible: 'בקרת איכות', sortOrder: 19 },
+  { workStage: 'אישור לפני מסירה', description: 'הושלמו מדידות, תיעוד ותוכניות עדות', responsible: 'קבלן', sortOrder: 20 },
 ];
+
+// ברירת מחדל לפרקים שאין להם תבנית ספציפית
+const DEFAULT_CHECKLIST_ITEMS = [
+  { workStage: 'בקרה מקדימה', description: 'בדיקת תוכניות ומסמכים מאושרים', responsible: 'בקרת איכות', sortOrder: 1 },
+  { workStage: 'בקרה מקדימה', description: 'בדיקת חומרים ואישורים', responsible: 'קבלן', sortOrder: 2 },
+  { workStage: 'בקרה מקדימה', description: 'בדיקת תשתית וניקיון', responsible: 'קבלן', sortOrder: 3 },
+  { workStage: 'בקרה שוטפת', description: 'ביצוע לפי תוכנית', responsible: 'קבלן', sortOrder: 4 },
+  { workStage: 'בקרה שוטפת', description: 'בדיקות איכות שוטפות', responsible: 'בקרת איכות', sortOrder: 5 },
+  { workStage: 'בקרה שוטפת', description: 'תיעוד ממצאים', responsible: 'בקרת איכות', sortOrder: 6 },
+  { workStage: 'אישור לפני מסירה', description: 'בדיקה סופית', responsible: 'בקרת איכות', sortOrder: 7 },
+  { workStage: 'אישור לפני מסירה', description: 'תיקון ליקויים', responsible: 'קבלן', sortOrder: 8 },
+  { workStage: 'אישור לפני מסירה', description: 'אישור מסירה', responsible: 'פיקוח', sortOrder: 9 },
+];
+
+const CHAPTER_CHECKLIST_ITEMS: Record<string, typeof DEFAULT_CHECKLIST_ITEMS> = {
+  '01': CHAPTER_01_ITEMS,
+};
+
+function getChecklistItemsForChapter(chapterCode: string) {
+  return CHAPTER_CHECKLIST_ITEMS[chapterCode] || DEFAULT_CHECKLIST_ITEMS;
+}
 
 export async function GET(
   request: NextRequest,
@@ -58,6 +81,15 @@ export async function POST(
     const { id } = await params;
     const data = await request.json();
 
+    // קבל את קוד הפרק כדי לבחור את פריטי הרשימה המתאימים
+    const projectChapter = await prisma.projectChapter.findUnique({
+      where: { id },
+      include: { chapter: true },
+    });
+
+    const chapterCode = projectChapter?.chapter?.code || '';
+    const checklistItems = getChecklistItemsForChapter(chapterCode);
+
     const checklist = await prisma.checklist.create({
       data: {
         projectChapterId: id,
@@ -70,7 +102,7 @@ export async function POST(
         openDate: data.openDate ? new Date(data.openDate) : null,
         closeDate: data.closeDate ? new Date(data.closeDate) : null,
         items: {
-          create: DEFAULT_CHECKLIST_ITEMS,
+          create: checklistItems,
         },
       },
       include: {
