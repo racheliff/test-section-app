@@ -195,6 +195,86 @@ const CHAPTER_08_ITEMS = [
   { workStage: 'אישור לפני מסירה', description: 'נמסרו תוכניות עדות, דוחות בדיקה והוראות הפעלה.', responsible: 'קבלן', sortOrder: 20 },
 ];
 
+// פרק 09 - עבודות טיח (20 סעיפים: 6+8+6)
+const CHAPTER_09_ITEMS = [
+  // פרק 1 – בקרה מקדימה (6 פריטים)
+  { workStage: 'בקרה מקדימה', description: 'קיימים מפרט, פרטים וסאבמיטלים מאושרים.', responsible: 'קבלן', sortOrder: 1 },
+  { workStage: 'בקרה מקדימה', description: 'סוגי הטיח, הרשתות והאביזרים תואמים לתשתית ולייעוד.', responsible: 'בקרת איכות', sortOrder: 2 },
+  { workStage: 'בקרה מקדימה', description: 'התשתית יציבה, נקייה וללא אבק, שמן או חלקים רופפים.', responsible: 'קבלן', sortOrder: 3 },
+  { workStage: 'בקרה מקדימה', description: 'סדקים, חיבורים, חריצים ומעברי מערכות טופלו.', responsible: 'קבלן', sortOrder: 4 },
+  { workStage: 'בקרה מקדימה', description: 'מובילים, פינות וסרגלים הותקנו במיקום הנדרש.', responsible: 'קבלן', sortOrder: 5 },
+  { workStage: 'בקרה מקדימה', description: 'בוצע קטע ניסיון ואושרו מרקם וגמר לפי הצורך.', responsible: 'בקרת איכות', sortOrder: 6 },
+  // פרק 2 – בקרה שוטפת (8 פריטים)
+  { workStage: 'בקרה שוטפת', description: 'בוצעה שכבת הכנה/הרבצה בהתאם למערכת המאושרת.', responsible: 'קבלן', sortOrder: 7 },
+  { workStage: 'בקרה שוטפת', description: 'רשתות חיזוק מותקנות במפגשי חומרים ובאזורים הנדרשים.', responsible: 'קבלן', sortOrder: 8 },
+  { workStage: 'בקרה שוטפת', description: 'עובי השכבות וזמני ההמתנה תואמים להוראות.', responsible: 'בקרת איכות', sortOrder: 9 },
+  { workStage: 'בקרה שוטפת', description: 'הטיח מיושם במישוריות, באנכיות ובפינות ישרות.', responsible: 'קבלן', sortOrder: 10 },
+  { workStage: 'בקרה שוטפת', description: 'החיבורים למשקופים, אדנים ופתחים רציפים.', responsible: 'קבלן', sortOrder: 11 },
+  { workStage: 'בקרה שוטפת', description: 'נשמרת הגנה מתנאי מזג אוויר והתייבשות מהירה.', responsible: 'קבלן', sortOrder: 12 },
+  { workStage: 'בקרה שוטפת', description: 'האשפרה מבוצעת בהתאם לסוג הטיח.', responsible: 'קבלן', sortOrder: 13 },
+  { workStage: 'בקרה שוטפת', description: 'לא נראים סדקים, התנפחויות או היפרדות במהלך הביצוע.', responsible: 'בקרת איכות', sortOrder: 14 },
+  // פרק 3 – אישור לפני מסירה (6 פריטים)
+  { workStage: 'אישור לפני מסירה', description: 'מישוריות, אנכיות, עובי ומרקם הגמר נבדקו.', responsible: 'בקרת איכות', sortOrder: 15 },
+  { workStage: 'אישור לפני מסירה', description: 'ההקשה אינה מצביעה על אזורים חלולים או רופפים.', responsible: 'בקרת איכות', sortOrder: 16 },
+  { workStage: 'אישור לפני מסירה', description: 'לא נמצאו סדקים, קילופים, כתמים או תיקונים בולטים.', responsible: 'בקרת איכות', sortOrder: 17 },
+  { workStage: 'אישור לפני מסירה', description: 'פינות, קנטים ומפגשים עם פריטים אחרים הושלמו.', responsible: 'קבלן', sortOrder: 18 },
+  { workStage: 'אישור לפני מסירה', description: 'בוצעו בדיקות הידבקות ככל שנדרשו.', responsible: 'בקרת איכות', sortOrder: 19 },
+  { workStage: 'אישור לפני מסירה', description: 'ליקויים תוקנו והשטח נמסר נקי ומוגן.', responsible: 'קבלן', sortOrder: 20 },
+];
+
+// פרק 10 - עבודות ריצוף וחיפוי (20 סעיפים: 6+8+6)
+const CHAPTER_10_ITEMS = [
+  // פרק 1 – בקרה מקדימה (6 פריטים)
+  { workStage: 'בקרה מקדימה', description: 'קיימים תוכניות פריסה, פרטים וסאבמיטלים מאושרים.', responsible: 'קבלן', sortOrder: 1 },
+  { workStage: 'בקרה מקדימה', description: 'האריחים, הדבקים, המילוי והאביזרים תואמים לאישור.', responsible: 'בקרת איכות', sortOrder: 2 },
+  { workStage: 'בקרה מקדימה', description: 'התשתית יציבה, נקייה, מפולסת ובשיפועים הנדרשים.', responsible: 'קבלן', sortOrder: 3 },
+  { workStage: 'בקרה מקדימה', description: 'איטום ובדיקת הצפה אושרו לפני כיסוי, ככל שנדרש.', responsible: 'בקרת איכות', sortOrder: 4 },
+  { workStage: 'בקרה מקדימה', description: 'מידות, גוונים, אצוות וכמות חומר להשלמות נבדקו.', responsible: 'קבלן', sortOrder: 5 },
+  { workStage: 'בקרה מקדימה', description: 'נקבעו קווי התחלה, מישקים, פתחים וספי גמר.', responsible: 'קבלן', sortOrder: 6 },
+  // פרק 2 – בקרה שוטפת (8 פריטים)
+  { workStage: 'בקרה שוטפת', description: 'הפריסה, הכיוון והחיתוכים תואמים לתוכנית המאושרת.', responsible: 'בקרת איכות', sortOrder: 7 },
+  { workStage: 'בקרה שוטפת', description: 'הדבק מוכן ומיושם בשיטה ובכיסוי הנדרשים.', responsible: 'קבלן', sortOrder: 8 },
+  { workStage: 'בקרה שוטפת', description: 'האריחים מקובעים ללא חללים או הפרשי גובה חריגים.', responsible: 'קבלן', sortOrder: 9 },
+  { workStage: 'בקרה שוטפת', description: 'רוחב המישקים, הקווים והמפלסים אחידים.', responsible: 'בקרת איכות', sortOrder: 10 },
+  { workStage: 'בקרה שוטפת', description: 'שיפועים לנקזים מבוצעים ללא מים עומדים.', responsible: 'קבלן', sortOrder: 11 },
+  { workStage: 'בקרה שוטפת', description: 'תפרי הפרדה והתפשטות נשמרים ומטופלים כנדרש.', responsible: 'קבלן', sortOrder: 12 },
+  { workStage: 'בקרה שוטפת', description: 'פינות, ספים, פנלים וחיבורים לאביזרים מבוצעים נקי.', responsible: 'קבלן', sortOrder: 13 },
+  { workStage: 'בקרה שוטפת', description: 'המשטח מוגן מתנועה ומפגיעה עד להתקשות.', responsible: 'קבלן', sortOrder: 14 },
+  // פרק 3 – אישור לפני מסירה (6 פריטים)
+  { workStage: 'אישור לפני מסירה', description: 'מישוריות, הפרשי גובה, שיפועים ומפלסים נבדקו.', responsible: 'בקרת איכות', sortOrder: 15 },
+  { workStage: 'אישור לפני מסירה', description: 'לא נמצאו אריחים חלולים, סדוקים, מוכתמים או רופפים.', responsible: 'בקרת איכות', sortOrder: 16 },
+  { workStage: 'אישור לפני מסירה', description: 'המישקים מולאו באופן אחיד ונקי.', responsible: 'קבלן', sortOrder: 17 },
+  { workStage: 'אישור לפני מסירה', description: 'תפרים, ספים, פנלים ונקזים הושלמו.', responsible: 'קבלן', sortOrder: 18 },
+  { workStage: 'אישור לפני מסירה', description: 'בדיקות ניקוז/הצפה הושלמו לפי הצורך.', responsible: 'בקרת איכות', sortOrder: 19 },
+  { workStage: 'אישור לפני מסירה', description: 'השטח נוקה, הוגן ונשמרו אריחים להחלפה.', responsible: 'קבלן', sortOrder: 20 },
+];
+
+// פרק 11 - עבודות צביעה (19 סעיפים: 6+7+6)
+const CHAPTER_11_ITEMS = [
+  // פרק 1 – בקרה מקדימה (6 פריטים)
+  { workStage: 'בקרה מקדימה', description: 'קיימים מפרט, גוונים, מערכות צבע וסאבמיטלים מאושרים.', responsible: 'קבלן', sortOrder: 1 },
+  { workStage: 'בקרה מקדימה', description: 'הצבע מתאים לתשתית, לסביבה ולייעוד.', responsible: 'בקרת איכות', sortOrder: 2 },
+  { workStage: 'בקרה מקדימה', description: 'התשתית יבשה, יציבה, נקייה וללא אבק או שומן.', responsible: 'קבלן', sortOrder: 3 },
+  { workStage: 'בקרה מקדימה', description: 'תיקוני טיח, שפכטל, סדקים וחיבורים הושלמו.', responsible: 'קבלן', sortOrder: 4 },
+  { workStage: 'בקרה מקדימה', description: 'פריטים סמוכים הוגנו מפני לכלוך והתזה.', responsible: 'קבלן', sortOrder: 5 },
+  { workStage: 'בקרה מקדימה', description: 'בוצע קטע ניסיון ואושרו הגוון ורמת הגמר.', responsible: 'בקרת איכות', sortOrder: 6 },
+  // פרק 2 – בקרה שוטפת (7 פריטים)
+  { workStage: 'בקרה שוטפת', description: 'חומר היסוד מתאים ומיושם באופן אחיד.', responsible: 'קבלן', sortOrder: 7 },
+  { workStage: 'בקרה שוטפת', description: 'הערבוב, הדילול וזמני הייבוש תואמים להוראות היצרן.', responsible: 'קבלן', sortOrder: 8 },
+  { workStage: 'בקרה שוטפת', description: 'מספר השכבות ושיעור הכיסוי תואמים למערכת.', responsible: 'בקרת איכות', sortOrder: 9 },
+  { workStage: 'בקרה שוטפת', description: 'כל שכבה יבשה, נקייה ותקינה לפני השכבה הבאה.', responsible: 'קבלן', sortOrder: 10 },
+  { workStage: 'בקרה שוטפת', description: 'היישום אחיד ללא נזילות, סימני כלים או אזורים חסרים.', responsible: 'בקרת איכות', sortOrder: 11 },
+  { workStage: 'בקרה שוטפת', description: 'קנטים, פינות וחיבורים לפריטים אחרים מבוצעים נקי.', responsible: 'קבלן', sortOrder: 12 },
+  { workStage: 'בקרה שוטפת', description: 'נשמרת הגנה מאבק, לחות ופגיעה במהלך הייבוש.', responsible: 'קבלן', sortOrder: 13 },
+  // פרק 3 – אישור לפני מסירה (6 פריטים)
+  { workStage: 'אישור לפני מסירה', description: 'הגוון, הברק והכיסוי אחידים בהתאם לדוגמה המאושרת.', responsible: 'בקרת איכות', sortOrder: 14 },
+  { workStage: 'אישור לפני מסירה', description: 'אין קילופים, בועות, סדקים, נזילות או כתמים.', responsible: 'בקרת איכות', sortOrder: 15 },
+  { workStage: 'אישור לפני מסירה', description: 'התיקונים נטמעים ואינם נראים לעין בתנאי התאורה הרגילים.', responsible: 'בקרת איכות', sortOrder: 16 },
+  { workStage: 'אישור לפני מסירה', description: 'קווי החיבור והקנטים ישרים ונקיים.', responsible: 'קבלן', sortOrder: 17 },
+  { workStage: 'אישור לפני מסירה', description: 'פריטים סמוכים נוקו וההגנות הוסרו.', responsible: 'קבלן', sortOrder: 18 },
+  { workStage: 'אישור לפני מסירה', description: 'הושלמו תיקונים, תיעוד ומסירת חומר להשלמות.', responsible: 'קבלן', sortOrder: 19 },
+];
+
 // ברירת מחדל לפרקים שאין להם תבנית ספציפית
 const DEFAULT_CHECKLIST_ITEMS = [
   { workStage: 'בקרה מקדימה', description: 'בדיקת תוכניות ומסמכים מאושרים', responsible: 'בקרת איכות', sortOrder: 1 },
@@ -216,6 +296,9 @@ const CHAPTER_CHECKLIST_ITEMS: Record<string, typeof DEFAULT_CHECKLIST_ITEMS> = 
   '06': CHAPTER_06_ITEMS,
   '07': CHAPTER_07_ITEMS,
   '08': CHAPTER_08_ITEMS,
+  '09': CHAPTER_09_ITEMS,
+  '10': CHAPTER_10_ITEMS,
+  '11': CHAPTER_11_ITEMS,
 };
 
 function getChecklistItemsForChapter(chapterCode: string) {
