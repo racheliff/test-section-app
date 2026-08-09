@@ -86,6 +86,35 @@ const CHAPTER_04_ITEMS = [
   { workStage: 'אישור לפני מסירה', description: 'ליקויים, תיעוד ואישורי הבקרה הושלמו.', responsible: 'בקרת איכות', sortOrder: 20 },
 ];
 
+// פרק 05 - עבודות איטום (22 סעיפים: 7+9+6)
+const CHAPTER_05_ITEMS = [
+  // פרק 1 – בקרה מקדימה (7 פריטים)
+  { workStage: 'בקרה מקדימה', description: 'קיימים תוכנית, פרטי ביצוע וסאבמיטל מאושרים.', responsible: 'קבלן', sortOrder: 1 },
+  { workStage: 'בקרה מקדימה', description: 'החומרים תואמים למערכת המאושרת ולהוראות היצרן.', responsible: 'בקרת איכות', sortOrder: 2 },
+  { workStage: 'בקרה מקדימה', description: 'התשתית יציבה, נקייה, יבשה וללא חלקים רופפים.', responsible: 'קבלן', sortOrder: 3 },
+  { workStage: 'בקרה מקדימה', description: 'השיפועים לכיוון הנקזים בוצעו כנדרש.', responsible: 'קבלן', sortOrder: 4 },
+  { workStage: 'בקרה מקדימה', description: 'סדקים, כיסי חצץ, בליטות ושקעים טופלו.', responsible: 'קבלן', sortOrder: 5 },
+  { workStage: 'בקרה מקדימה', description: 'רולקות, פינות, חדירות, תפרים ונקזים הוכנו.', responsible: 'קבלן', sortOrder: 6 },
+  { workStage: 'בקרה מקדימה', description: 'תנאי מזג האוויר מתאימים לביצוע העבודה.', responsible: 'קבלן', sortOrder: 7 },
+  // פרק 2 – בקרה שוטפת (9 פריטים)
+  { workStage: 'בקרה שוטפת', description: 'הפריימר מתאים, אחיד ויבש לפני המשך העבודה.', responsible: 'בקרת איכות', sortOrder: 8 },
+  { workStage: 'בקרה שוטפת', description: 'נשמרו הוראות הערבוב, היישום וזמני ההמתנה.', responsible: 'קבלן', sortOrder: 9 },
+  { workStage: 'בקרה שוטפת', description: 'מספר השכבות, העובי וצריכת החומר תואמים לדרישות.', responsible: 'בקרת איכות', sortOrder: 10 },
+  { workStage: 'בקרה שוטפת', description: 'האיטום רציף ללא חורים, קרעים, בועות או ניתוקים.', responsible: 'בקרת איכות', sortOrder: 11 },
+  { workStage: 'בקרה שוטפת', description: 'חפיפות וחיבורים בין יריעות בוצעו כנדרש.', responsible: 'קבלן', sortOrder: 12 },
+  { workStage: 'בקרה שוטפת', description: 'בוצעו חיזוקים בפינות ובמפגשי רצפה-קיר.', responsible: 'קבלן', sortOrder: 13 },
+  { workStage: 'בקרה שוטפת', description: 'חדירות, תפרים, נקזים וספי פתחים נאטמו.', responsible: 'קבלן', sortOrder: 14 },
+  { workStage: 'בקרה שוטפת', description: 'גובה העלייה וסיום האיטום תואמים לפרטים.', responsible: 'בקרת איכות', sortOrder: 15 },
+  { workStage: 'בקרה שוטפת', description: 'האיטום מוגן מפגיעה במהלך המשך העבודות.', responsible: 'קבלן', sortOrder: 16 },
+  // פרק 3 – אישור לפני מסירה (6 פריטים)
+  { workStage: 'אישור לפני מסירה', description: 'בוצעה בדיקה חזותית מלאה ולא נמצאו פגמים.', responsible: 'בקרת איכות', sortOrder: 17 },
+  { workStage: 'אישור לפני מסירה', description: 'כל החדירות, הקצוות, החיבורים והנקזים הושלמו.', responsible: 'קבלן', sortOrder: 18 },
+  { workStage: 'אישור לפני מסירה', description: 'בדיקת הצפה/אטימות הושלמה ללא סימני כשל.', responsible: 'בקרת איכות', sortOrder: 19 },
+  { workStage: 'אישור לפני מסירה', description: 'כל הליקויים תוקנו ונבדקו מחדש.', responsible: 'בקרת איכות', sortOrder: 20 },
+  { workStage: 'אישור לפני מסירה', description: 'שכבת ההגנה בוצעה ללא פגיעה באיטום.', responsible: 'קבלן', sortOrder: 21 },
+  { workStage: 'אישור לפני מסירה', description: 'הושלמו תמונות, אישורי חומרים ודוח הבדיקה.', responsible: 'קבלן', sortOrder: 22 },
+];
+
 // ברירת מחדל לפרקים שאין להם תבנית ספציפית
 const DEFAULT_CHECKLIST_ITEMS = [
   { workStage: 'בקרה מקדימה', description: 'בדיקת תוכניות ומסמכים מאושרים', responsible: 'בקרת איכות', sortOrder: 1 },
@@ -103,6 +132,7 @@ const CHAPTER_CHECKLIST_ITEMS: Record<string, typeof DEFAULT_CHECKLIST_ITEMS> = 
   '01': CHAPTER_01_ITEMS,
   '02': CHAPTER_02_ITEMS,
   '04': CHAPTER_04_ITEMS,
+  '05': CHAPTER_05_ITEMS,
 };
 
 function getChecklistItemsForChapter(chapterCode: string) {
