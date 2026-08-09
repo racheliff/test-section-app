@@ -651,13 +651,6 @@ export default function ChapterDetailPage() {
                             <div className="text-2xl font-bold text-blue-600">{completedCount}/{totalCount}</div>
                             <div className="text-xs text-gray-500">הושלמו</div>
                           </div>
-                          <Link
-                            href={`/projects/${params.id}/building/${params.chapterId}/checklist/${checklist.id}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-                          >
-                            פתח דוח מלא
-                          </Link>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
