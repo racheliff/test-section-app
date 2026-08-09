@@ -59,6 +59,33 @@ const CHAPTER_02_ITEMS = [
   { workStage: 'אישור לפני מסירה', description: 'הושלם תיעוד: תעודות משלוח, פרוטוקולים ותוכניות As-Made.', responsible: 'קבלן', sortOrder: 24 },
 ];
 
+// פרק 04 - עבודות בנייה (20 סעיפים: 6+8+6)
+const CHAPTER_04_ITEMS = [
+  // פרק 1 – בקרה מקדימה (6 פריטים)
+  { workStage: 'בקרה מקדימה', description: 'קיימים תוכניות, פריסות, פרטים וסאבמיטלים מאושרים.', responsible: 'קבלן', sortOrder: 1 },
+  { workStage: 'בקרה מקדימה', description: 'סוג הבלוקים/לבנים וחומרי המליטה תואמים לאישור.', responsible: 'בקרת איכות', sortOrder: 2 },
+  { workStage: 'בקרה מקדימה', description: 'התשתית, קווי הבנייה, הפתחים והמפלסים סומנו.', responsible: 'קבלן', sortOrder: 3 },
+  { workStage: 'בקרה מקדימה', description: 'קוצים, עוגנים, חגורות ועמודונים הוכנו לפי הפרטים.', responsible: 'קבלן', sortOrder: 4 },
+  { workStage: 'בקרה מקדימה', description: 'החומרים שלמים, יבשים ומאוחסנים כנדרש.', responsible: 'קבלן', sortOrder: 5 },
+  { workStage: 'בקרה מקדימה', description: 'תואמו מעברי מערכות וחיבורים לאלמנטים סמוכים.', responsible: 'קבלן', sortOrder: 6 },
+  // פרק 2 – בקרה שוטפת (8 פריטים)
+  { workStage: 'בקרה שוטפת', description: 'השורה הראשונה מפולסת וממוקמת בהתאם לתוכנית.', responsible: 'קבלן', sortOrder: 7 },
+  { workStage: 'בקרה שוטפת', description: 'הקירות נבנים במישור, באנכיות ובמידות הנדרשות.', responsible: 'קבלן', sortOrder: 8 },
+  { workStage: 'בקרה שוטפת', description: 'עובי המישקים ומילויים אחידים ורציפים.', responsible: 'בקרת איכות', sortOrder: 9 },
+  { workStage: 'בקרה שוטפת', description: 'הקשרים, העוגנים והחיזוקים מותקנים לפי הפרטים.', responsible: 'קבלן', sortOrder: 10 },
+  { workStage: 'בקרה שוטפת', description: 'פתחים, משקופים ומעברי מערכות מבוצעים במיקום הנכון.', responsible: 'קבלן', sortOrder: 11 },
+  { workStage: 'בקרה שוטפת', description: 'חגורות, קורות ועמודונים מבוצעים כנדרש.', responsible: 'קבלן', sortOrder: 12 },
+  { workStage: 'בקרה שוטפת', description: 'חיתוך הרכיבים מבוקר ואין שברים או השלמות מאולתרות.', responsible: 'בקרת איכות', sortOrder: 13 },
+  { workStage: 'בקרה שוטפת', description: 'ראשי הקירות והמפגשים עם שלד מטופלים לפי הפרט.', responsible: 'קבלן', sortOrder: 14 },
+  // פרק 3 – אישור לפני מסירה (6 פריטים)
+  { workStage: 'אישור לפני מסירה', description: 'מידות, מישוריות, אנכיות ומיקום הפתחים נבדקו.', responsible: 'בקרת איכות', sortOrder: 15 },
+  { workStage: 'אישור לפני מסירה', description: 'הקירות שלמים ללא סדקים, חלקים רופפים או חללים.', responsible: 'בקרת איכות', sortOrder: 16 },
+  { workStage: 'אישור לפני מסירה', description: 'החיבורים לשלד, למשקופים ולמערכות הושלמו.', responsible: 'קבלן', sortOrder: 17 },
+  { workStage: 'אישור לפני מסירה', description: 'חריצים ופתחים תוקנו בחומרים מתאימים.', responsible: 'קבלן', sortOrder: 18 },
+  { workStage: 'אישור לפני מסירה', description: 'השטח נוקה והוכן לעבודות הגמר.', responsible: 'קבלן', sortOrder: 19 },
+  { workStage: 'אישור לפני מסירה', description: 'ליקויים, תיעוד ואישורי הבקרה הושלמו.', responsible: 'בקרת איכות', sortOrder: 20 },
+];
+
 // ברירת מחדל לפרקים שאין להם תבנית ספציפית
 const DEFAULT_CHECKLIST_ITEMS = [
   { workStage: 'בקרה מקדימה', description: 'בדיקת תוכניות ומסמכים מאושרים', responsible: 'בקרת איכות', sortOrder: 1 },
@@ -75,6 +102,7 @@ const DEFAULT_CHECKLIST_ITEMS = [
 const CHAPTER_CHECKLIST_ITEMS: Record<string, typeof DEFAULT_CHECKLIST_ITEMS> = {
   '01': CHAPTER_01_ITEMS,
   '02': CHAPTER_02_ITEMS,
+  '04': CHAPTER_04_ITEMS,
 };
 
 function getChecklistItemsForChapter(chapterCode: string) {
