@@ -141,6 +141,33 @@ const CHAPTER_06_ITEMS = [
   { workStage: 'אישור לפני מסירה', description: 'נמסרו מפתחות, אישורים, אחריות ותיעוד.', responsible: 'קבלן', sortOrder: 19 },
 ];
 
+// פרק 07 - מתקני תברואה (20 סעיפים: 6+8+6)
+const CHAPTER_07_ITEMS = [
+  // פרק 1 – בקרה מקדימה (6 פריטים)
+  { workStage: 'בקרה מקדימה', description: 'קיימים תוכניות ביצוע, סכמות, פרטים וסאבמיטלים מאושרים.', responsible: 'קבלן', sortOrder: 1 },
+  { workStage: 'בקרה מקדימה', description: 'סוגי הצנרת, האביזרים והקטרים תואמים לתכנון.', responsible: 'בקרת איכות', sortOrder: 2 },
+  { workStage: 'בקרה מקדימה', description: 'תוואים, מפלסים, שיפועים ופתחים תואמו עם יתר המערכות.', responsible: 'קבלן', sortOrder: 3 },
+  { workStage: 'בקרה מקדימה', description: 'החומרים נושאים סימון ואישורים ונשמרים כנדרש.', responsible: 'בקרת איכות', sortOrder: 4 },
+  { workStage: 'בקרה מקדימה', description: 'שרוולים, מעברים ונקודות קיבוע הוכנו.', responsible: 'קבלן', sortOrder: 5 },
+  { workStage: 'בקרה מקדימה', description: 'נקבעו מקטעי בדיקה ושיטת בדיקת הלחץ/האטימות.', responsible: 'בקרת איכות', sortOrder: 6 },
+  // פרק 2 – בקרה שוטפת (8 פריטים)
+  { workStage: 'בקרה שוטפת', description: 'הצנרת מותקנת בתוואי, בקוטר ובשיפוע הנדרשים.', responsible: 'קבלן', sortOrder: 7 },
+  { workStage: 'בקרה שוטפת', description: 'חיבורים מבוצעים בשיטה ובאביזרים המתאימים.', responsible: 'קבלן', sortOrder: 8 },
+  { workStage: 'בקרה שוטפת', description: 'תמיכות, חבקים ועיגונים מותקנים במרווחים הנדרשים.', responsible: 'קבלן', sortOrder: 9 },
+  { workStage: 'בקרה שוטפת', description: 'נשמרת הפרדה והגנה בין מערכות וחומרים שונים.', responsible: 'בקרת איכות', sortOrder: 10 },
+  { workStage: 'בקרה שוטפת', description: 'חדירות דרך קירות ותקרות נאטמות לפי הדרישות.', responsible: 'קבלן', sortOrder: 11 },
+  { workStage: 'בקרה שוטפת', description: 'מגופים, נקודות ביקורת ואביזרים נגישים לתחזוקה.', responsible: 'קבלן', sortOrder: 12 },
+  { workStage: 'בקרה שוטפת', description: 'הצנרת מוגנת לפני כיסוי או יציקה.', responsible: 'קבלן', sortOrder: 13 },
+  { workStage: 'בקרה שוטפת', description: 'בדיקות לחץ, אטימות ושטיפה מתועדות לפני כיסוי.', responsible: 'בקרת איכות', sortOrder: 14 },
+  // פרק 3 – אישור לפני מסירה (6 פריטים)
+  { workStage: 'אישור לפני מסירה', description: 'כל הבדיקות עברו בהצלחה והליקויים נסגרו.', responsible: 'בקרת איכות', sortOrder: 15 },
+  { workStage: 'אישור לפני מסירה', description: 'הכלים והאביזרים מותקנים, יציבים ופועלים כנדרש.', responsible: 'קבלן', sortOrder: 16 },
+  { workStage: 'אישור לפני מסירה', description: 'זרימות, ניקוזים, שיפועים ואוורור המערכת נבדקו.', responsible: 'בקרת איכות', sortOrder: 17 },
+  { workStage: 'אישור לפני מסירה', description: 'חדירות, בידוד וסימון הצנרת הושלמו.', responsible: 'קבלן', sortOrder: 18 },
+  { workStage: 'אישור לפני מסירה', description: 'בוצעו ניקוי, שטיפה וחיטוי לפי הצורך.', responsible: 'קבלן', sortOrder: 19 },
+  { workStage: 'אישור לפני מסירה', description: 'הושלמו תוכניות עדות, אישורים והוראות תחזוקה.', responsible: 'קבלן', sortOrder: 20 },
+];
+
 // ברירת מחדל לפרקים שאין להם תבנית ספציפית
 const DEFAULT_CHECKLIST_ITEMS = [
   { workStage: 'בקרה מקדימה', description: 'בדיקת תוכניות ומסמכים מאושרים', responsible: 'בקרת איכות', sortOrder: 1 },
@@ -160,6 +187,7 @@ const CHAPTER_CHECKLIST_ITEMS: Record<string, typeof DEFAULT_CHECKLIST_ITEMS> = 
   '04': CHAPTER_04_ITEMS,
   '05': CHAPTER_05_ITEMS,
   '06': CHAPTER_06_ITEMS,
+  '07': CHAPTER_07_ITEMS,
 };
 
 function getChecklistItemsForChapter(chapterCode: string) {
