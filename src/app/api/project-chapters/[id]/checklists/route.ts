@@ -115,6 +115,32 @@ const CHAPTER_05_ITEMS = [
   { workStage: 'אישור לפני מסירה', description: 'הושלמו תמונות, אישורי חומרים ודוח הבדיקה.', responsible: 'קבלן', sortOrder: 22 },
 ];
 
+// פרק 06 - מוצרי נגרות אומן ומסגרות פלדה (19 סעיפים: 6+7+6)
+const CHAPTER_06_ITEMS = [
+  // פרק 1 – בקרה מקדימה (6 פריטים)
+  { workStage: 'בקרה מקדימה', description: 'קיימים רשימות פריטים, תוכניות, פרטים וסאבמיטלים מאושרים.', responsible: 'קבלן', sortOrder: 1 },
+  { workStage: 'בקרה מקדימה', description: 'מידות הפתחים והמפלסים נבדקו לפני הייצור/ההתקנה.', responsible: 'קבלן', sortOrder: 2 },
+  { workStage: 'בקרה מקדימה', description: 'סוגי החומרים, הפרזול והגמר תואמים לאישור.', responsible: 'בקרת איכות', sortOrder: 3 },
+  { workStage: 'בקרה מקדימה', description: 'התקבלו אישורי אש, אקוסטיקה או בטיחות לפי הצורך.', responsible: 'בקרת איכות', sortOrder: 4 },
+  { workStage: 'בקרה מקדימה', description: 'הפריטים מוגנים מפגיעה ומאוחסנים בתנאים מתאימים.', responsible: 'קבלן', sortOrder: 5 },
+  { workStage: 'בקרה מקדימה', description: 'נקודות העיגון והתשתיות מוכנות להתקנה.', responsible: 'קבלן', sortOrder: 6 },
+  // פרק 2 – בקרה שוטפת (7 פריטים)
+  { workStage: 'בקרה שוטפת', description: 'סוג, מידות וכיוון הפתיחה של כל פריט תואמים לתוכנית.', responsible: 'בקרת איכות', sortOrder: 7 },
+  { workStage: 'בקרה שוטפת', description: 'המשקופים והמסגרות מותקנים במיקום, אנכיות ומפלס תקינים.', responsible: 'קבלן', sortOrder: 8 },
+  { workStage: 'בקרה שוטפת', description: 'העיגונים, החיבורים והמילויים מבוצעים לפי הפרטים.', responsible: 'קבלן', sortOrder: 9 },
+  { workStage: 'בקרה שוטפת', description: 'הפרזול, הצירים, המנעולים והמחזירים מותקנים כנדרש.', responsible: 'קבלן', sortOrder: 10 },
+  { workStage: 'בקרה שוטפת', description: 'מרווחים, אטמים וחיבורים לקירות רציפים ואחידים.', responsible: 'בקרת איכות', sortOrder: 11 },
+  { workStage: 'בקרה שוטפת', description: 'הציפוי והגמר מוגנים במהלך ההתקנה.', responsible: 'קבלן', sortOrder: 12 },
+  { workStage: 'בקרה שוטפת', description: 'דלתות ופריטים נעים נפתחים ונסגרים בחופשיות.', responsible: 'קבלן', sortOrder: 13 },
+  // פרק 3 – אישור לפני מסירה (6 פריטים)
+  { workStage: 'אישור לפני מסירה', description: 'הפריטים שלמים, נקיים וללא פגיעות או קורוזיה.', responsible: 'בקרת איכות', sortOrder: 14 },
+  { workStage: 'אישור לפני מסירה', description: 'הפתיחה, הסגירה, הנעילה והפרזול נבדקו.', responsible: 'בקרת איכות', sortOrder: 15 },
+  { workStage: 'אישור לפני מסירה', description: 'מידות המרווחים, המישוריות והאנכיות תקינות.', responsible: 'בקרת איכות', sortOrder: 16 },
+  { workStage: 'אישור לפני מסירה', description: 'סימונים ואביזרים ייעודיים הותקנו.', responsible: 'קבלן', sortOrder: 17 },
+  { workStage: 'אישור לפני מסירה', description: 'תיקוני גמר בוצעו בהתאמה למוצר המאושר.', responsible: 'קבלן', sortOrder: 18 },
+  { workStage: 'אישור לפני מסירה', description: 'נמסרו מפתחות, אישורים, אחריות ותיעוד.', responsible: 'קבלן', sortOrder: 19 },
+];
+
 // ברירת מחדל לפרקים שאין להם תבנית ספציפית
 const DEFAULT_CHECKLIST_ITEMS = [
   { workStage: 'בקרה מקדימה', description: 'בדיקת תוכניות ומסמכים מאושרים', responsible: 'בקרת איכות', sortOrder: 1 },
@@ -133,6 +159,7 @@ const CHAPTER_CHECKLIST_ITEMS: Record<string, typeof DEFAULT_CHECKLIST_ITEMS> = 
   '02': CHAPTER_02_ITEMS,
   '04': CHAPTER_04_ITEMS,
   '05': CHAPTER_05_ITEMS,
+  '06': CHAPTER_06_ITEMS,
 };
 
 function getChecklistItemsForChapter(chapterCode: string) {
