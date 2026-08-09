@@ -275,6 +275,165 @@ const CHAPTER_11_ITEMS = [
   { workStage: 'אישור לפני מסירה', description: 'הושלמו תיקונים, תיעוד ומסירת חומר להשלמות.', responsible: 'קבלן', sortOrder: 19 },
 ];
 
+// פרק 12 - עבודות אלומיניום (19 סעיפים: 6+7+6)
+const CHAPTER_12_ITEMS = [
+  // פרק 1 – בקרה מקדימה (6 פריטים)
+  { workStage: 'בקרה מקדימה', description: 'קיימים רשימות פתחים, תוכניות ייצור, פרטים וסאבמיטלים מאושרים.', responsible: 'קבלן', sortOrder: 1 },
+  { workStage: 'בקרה מקדימה', description: 'מידות הפתחים והמפלסים נמדדו ואומתו באתר.', responsible: 'קבלן', sortOrder: 2 },
+  { workStage: 'בקרה מקדימה', description: 'הפרופילים, הזיגוג, האטמים והפרזול תואמים לאישור.', responsible: 'בקרת איכות', sortOrder: 3 },
+  { workStage: 'בקרה מקדימה', description: 'קיימים אישורי ביצועים, בטיחות ואש ככל שנדרש.', responsible: 'בקרת איכות', sortOrder: 4 },
+  { workStage: 'בקרה מקדימה', description: 'הפתחים, העוגנים והספים מוכנים להתקנה.', responsible: 'קבלן', sortOrder: 5 },
+  { workStage: 'בקרה מקדימה', description: 'הפריטים מאוחסנים ומוגנים מפגיעה.', responsible: 'קבלן', sortOrder: 6 },
+  // פרק 2 – בקרה שוטפת (7 פריטים)
+  { workStage: 'בקרה שוטפת', description: 'המסגרות מותקנות במיקום, באנכיות ובמפלס הנדרשים.', responsible: 'קבלן', sortOrder: 7 },
+  { workStage: 'בקרה שוטפת', description: 'עיגונים וחיבורים לתשתית מבוצעים לפי פרטי המערכת.', responsible: 'קבלן', sortOrder: 8 },
+  { workStage: 'בקרה שוטפת', description: 'מרווחים היקפיים, חומרי מילוי ואיטום רציפים ומתאימים.', responsible: 'בקרת איכות', sortOrder: 9 },
+  { workStage: 'בקרה שוטפת', description: 'הזכוכית מותקנת בסוג, בעובי ובכיוון הנכונים.', responsible: 'קבלן', sortOrder: 10 },
+  { workStage: 'בקרה שוטפת', description: 'אטמים, ניקוזים ופתחי השוואת לחצים פתוחים ותקינים.', responsible: 'בקרת איכות', sortOrder: 11 },
+  { workStage: 'בקרה שוטפת', description: 'הפרזול מותקן ומכוון ללא מאמץ או חיכוך.', responsible: 'קבלן', sortOrder: 12 },
+  { workStage: 'בקרה שוטפת', description: 'הגמר והציפוי מוגנים במהלך העבודות.', responsible: 'קבלן', sortOrder: 13 },
+  // פרק 3 – אישור לפני מסירה (6 פריטים)
+  { workStage: 'אישור לפני מסירה', description: 'פתיחה, סגירה, נעילה וכיוון כל הכנפיים נבדקו.', responsible: 'בקרת איכות', sortOrder: 14 },
+  { workStage: 'אישור לפני מסירה', description: 'בוצעה בדיקת אטימות/המטרה ככל שנדרשה.', responsible: 'בקרת איכות', sortOrder: 15 },
+  { workStage: 'אישור לפני מסירה', description: 'הזיגוג, האטמים והאיטום שלמים ורציפים.', responsible: 'בקרת איכות', sortOrder: 16 },
+  { workStage: 'אישור לפני מסירה', description: 'המסגרות נקיות ללא שריטות, עיוותים או פגיעות.', responsible: 'קבלן', sortOrder: 17 },
+  { workStage: 'אישור לפני מסירה', description: 'ניקוזי המסילות והפתחים חופשיים.', responsible: 'קבלן', sortOrder: 18 },
+  { workStage: 'אישור לפני מסירה', description: 'נמסרו אישורים, אחריות, הוראות תחזוקה ותיעוד.', responsible: 'קבלן', sortOrder: 19 },
+];
+
+// פרק 14 - עבודות אבן (19 סעיפים: 6+7+6)
+const CHAPTER_14_ITEMS = [
+  // פרק 1 – בקרה מקדימה (6 פריטים)
+  { workStage: 'בקרה מקדימה', description: 'קיימים תוכניות פריסה, פרטי עיגון וסאבמיטלים מאושרים.', responsible: 'קבלן', sortOrder: 1 },
+  { workStage: 'בקרה מקדימה', description: 'סוג האבן, המקור, המידות והגמר תואמים לאישור.', responsible: 'בקרת איכות', sortOrder: 2 },
+  { workStage: 'בקרה מקדימה', description: 'התקבלו בדיקות ואישורי התאמה הנדרשים לאבן.', responsible: 'בקרת איכות', sortOrder: 3 },
+  { workStage: 'בקרה מקדימה', description: 'התשתית, העוגנים, הזוויות והמפלסים מוכנים.', responsible: 'קבלן', sortOrder: 4 },
+  { workStage: 'בקרה מקדימה', description: 'בוצע קטע ניסיון ואושרו גוון, מרקם ומישקים.', responsible: 'בקרת איכות', sortOrder: 5 },
+  { workStage: 'בקרה מקדימה', description: 'האבן מאוחסנת, ממוינת ומוגנת מפגיעה וכתמים.', responsible: 'קבלן', sortOrder: 6 },
+  // פרק 2 – בקרה שוטפת (7 פריטים)
+  { workStage: 'בקרה שוטפת', description: 'הפריסה, מידות האבן וכיוון המרקם תואמים לתוכנית.', responsible: 'בקרת איכות', sortOrder: 7 },
+  { workStage: 'בקרה שוטפת', description: 'העוגנים והחיבורים מותקנים לפי פרטי המערכת.', responsible: 'קבלן', sortOrder: 8 },
+  { workStage: 'בקרה שוטפת', description: 'נשמרים מישקים, מרווחי אוורור ותפרים כנדרש.', responsible: 'קבלן', sortOrder: 9 },
+  { workStage: 'בקרה שוטפת', description: 'האבנים יציבות, במישור וללא הפרשי גובה חריגים.', responsible: 'בקרת איכות', sortOrder: 10 },
+  { workStage: 'בקרה שוטפת', description: 'חיתוכים ופתחים מבוצעים נקי וללא סדיקה.', responsible: 'קבלן', sortOrder: 11 },
+  { workStage: 'בקרה שוטפת', description: 'חיבורים לפתחים, קופינגים ופינות מטופלים לפי הפרטים.', responsible: 'קבלן', sortOrder: 12 },
+  { workStage: 'בקרה שוטפת', description: 'המשטח מוגן מלכלוך ומפגיעה במהלך הביצוע.', responsible: 'קבלן', sortOrder: 13 },
+  // פרק 3 – אישור לפני מסירה (6 פריטים)
+  { workStage: 'אישור לפני מסירה', description: 'החיפוי נבדק למישוריות, יציבות ואחידות חזותית.', responsible: 'בקרת איכות', sortOrder: 14 },
+  { workStage: 'אישור לפני מסירה', description: 'לא נמצאו אבנים סדוקות, רופפות, מוכתמות או פגומות.', responsible: 'בקרת איכות', sortOrder: 15 },
+  { workStage: 'אישור לפני מסירה', description: 'המישקים, התפרים והאיטום הושלמו.', responsible: 'קבלן', sortOrder: 16 },
+  { workStage: 'אישור לפני מסירה', description: 'עוגנים וחיבורים נבדקו ותועדו לפני הסתרה.', responsible: 'בקרת איכות', sortOrder: 17 },
+  { workStage: 'אישור לפני מסירה', description: 'בוצעו ניקוי וטיפול מגן מאושר ככל שנדרש.', responsible: 'קבלן', sortOrder: 18 },
+  { workStage: 'אישור לפני מסירה', description: 'הושלמו בדיקות, תיקונים, תיעוד ואבנים להחלפה.', responsible: 'קבלן', sortOrder: 19 },
+];
+
+// פרק 15 - מתקני מיזוג אוויר (20 סעיפים: 6+8+6)
+const CHAPTER_15_ITEMS = [
+  // פרק 1 – בקרה מקדימה (6 פריטים)
+  { workStage: 'בקרה מקדימה', description: 'קיימים תוכניות ביצוע, חישובים, סכמות וסאבמיטלים מאושרים.', responsible: 'קבלן', sortOrder: 1 },
+  { workStage: 'בקרה מקדימה', description: 'הציוד, התעלות, הצנרת והאביזרים תואמים לאישור.', responsible: 'בקרת איכות', sortOrder: 2 },
+  { workStage: 'בקרה מקדימה', description: 'מיקומים, פתחים, עומסים וממשקים תואמו עם יתר המערכות.', responsible: 'קבלן', sortOrder: 3 },
+  { workStage: 'בקרה מקדימה', description: 'בסיסים, תליות, ניקוזים והזנות מוכנים.', responsible: 'קבלן', sortOrder: 4 },
+  { workStage: 'בקרה מקדימה', description: 'הציוד מאוחסן מוגן ועם סימון זיהוי.', responsible: 'קבלן', sortOrder: 5 },
+  { workStage: 'בקרה מקדימה', description: 'קיימת תוכנית בדיקות, הפעלה, איזון ומסירה.', responsible: 'בקרת איכות', sortOrder: 6 },
+  // פרק 2 – בקרה שוטפת (8 פריטים)
+  { workStage: 'בקרה שוטפת', description: 'ציוד מותקן במיקום, במפלס ובנגישות לתחזוקה.', responsible: 'קבלן', sortOrder: 7 },
+  { workStage: 'בקרה שוטפת', description: 'תעלות וצנרת מותקנות בתוואי ובתמיכות הנדרשות.', responsible: 'קבלן', sortOrder: 8 },
+  { workStage: 'בקרה שוטפת', description: 'חיבורים, אוגנים ואטימות המערכת מבוצעים כנדרש.', responsible: 'קבלן', sortOrder: 9 },
+  { workStage: 'בקרה שוטפת', description: 'בידוד תרמי/אקוסטי רציף ומוגן, כולל מחסומי אדים.', responsible: 'בקרת איכות', sortOrder: 10 },
+  { workStage: 'בקרה שוטפת', description: 'ניקוזי עיבוי מותקנים בשיפוע ונבדקים לזרימה.', responsible: 'קבלן', sortOrder: 11 },
+  { workStage: 'בקרה שוטפת', description: 'בולמי רעידות, שרוולים גמישים ואביזרי ויסות מותקנים.', responsible: 'קבלן', sortOrder: 12 },
+  { workStage: 'בקרה שוטפת', description: 'מעברי אש וחדירות מטופלים בהתאם לדרישות.', responsible: 'קבלן', sortOrder: 13 },
+  { workStage: 'בקרה שוטפת', description: 'המערכת נשמרת נקייה ואטומה במהלך הביצוע.', responsible: 'קבלן', sortOrder: 14 },
+  // פרק 3 – אישור לפני מסירה (6 פריטים)
+  { workStage: 'אישור לפני מסירה', description: 'בוצעו בדיקות לחץ, אטימות, ניקוז והפעלה.', responsible: 'בקרת איכות', sortOrder: 15 },
+  { workStage: 'אישור לפני מסירה', description: 'בוצעו שטיפה, ואקום ומילוי בהתאם לסוג המערכת.', responsible: 'קבלן', sortOrder: 16 },
+  { workStage: 'אישור לפני מסירה', description: 'בוצעו איזון אוויר/מים ומדידות ביצועים כנדרש.', responsible: 'בקרת איכות', sortOrder: 17 },
+  { workStage: 'אישור לפני מסירה', description: 'רעש, רעידות, טמפרטורות וספיקות נמצאו תקינים.', responsible: 'בקרת איכות', sortOrder: 18 },
+  { workStage: 'אישור לפני מסירה', description: 'הציוד, המסננים, הפתחים והבקרה מסומנים ופועלים.', responsible: 'קבלן', sortOrder: 19 },
+  { workStage: 'אישור לפני מסירה', description: 'נמסרו דוחות, תוכניות עדות, הוראות ואחריות.', responsible: 'קבלן', sortOrder: 20 },
+];
+
+// פרק 19 - מסגרות חרש (20 סעיפים: 6+8+6)
+const CHAPTER_19_ITEMS = [
+  // פרק 1 – בקרה מקדימה (6 פריטים)
+  { workStage: 'בקרה מקדימה', description: 'קיימים תוכניות ייצור והרכבה, חישובים ופרטים מאושרים.', responsible: 'קבלן', sortOrder: 1 },
+  { workStage: 'בקרה מקדימה', description: 'פרופילים, פחים, ברגים וחומרי ריתוך תואמים לאישור.', responsible: 'בקרת איכות', sortOrder: 2 },
+  { workStage: 'בקרה מקדימה', description: 'תעודות חומר, הסמכות רתכים ונהלי ריתוך זמינים.', responsible: 'בקרת איכות', sortOrder: 3 },
+  { workStage: 'בקרה מקדימה', description: 'מידות, צירים, בסיסים ועוגנים נמדדו ואומתו.', responsible: 'קבלן', sortOrder: 4 },
+  { workStage: 'בקרה מקדימה', description: 'תוכנית בדיקות ריתוך והידוק אושרה.', responsible: 'בקרת איכות', sortOrder: 5 },
+  { workStage: 'בקרה מקדימה', description: 'הוגדרו שיטת הרמה, תמיכות זמניות ובטיחות ההרכבה.', responsible: 'קבלן', sortOrder: 6 },
+  // פרק 2 – בקרה שוטפת (8 פריטים)
+  { workStage: 'בקרה שוטפת', description: 'סימון, מידות וכיוון האלמנטים תואמים לתוכניות.', responsible: 'בקרת איכות', sortOrder: 7 },
+  { workStage: 'בקרה שוטפת', description: 'ההרכבה מתבצעת לפי סדר מאושר עם ייצוב זמני.', responsible: 'קבלן', sortOrder: 8 },
+  { workStage: 'בקרה שוטפת', description: 'חיבורי ברגים מורכבים ומהודקים בשיטה הנדרשת.', responsible: 'קבלן', sortOrder: 9 },
+  { workStage: 'בקרה שוטפת', description: 'הריתוכים מבוצעים לפי הנוהל המאושר ובידי רתכים מוסמכים.', responsible: 'בקרת איכות', sortOrder: 10 },
+  { workStage: 'בקרה שוטפת', description: 'מידות הריתוך, רציפותו ומראהו נבדקים.', responsible: 'בקרת איכות', sortOrder: 11 },
+  { workStage: 'בקרה שוטפת', description: 'אנכיות, מפלסים, צירים וקמבר נבדקים במהלך ההרכבה.', responsible: 'קבלן', sortOrder: 12 },
+  { workStage: 'בקרה שוטפת', description: 'נזקי ציפוי וקורוזיה מטופלים במערכת המאושרת.', responsible: 'קבלן', sortOrder: 13 },
+  { workStage: 'בקרה שוטפת', description: 'בדיקות לא הורסות מבוצעות ומתועדות לפי התוכנית.', responsible: 'בקרת איכות', sortOrder: 14 },
+  // פרק 3 – אישור לפני מסירה (6 פריטים)
+  { workStage: 'אישור לפני מסירה', description: 'הגאומטריה, המפלסים, האנכיות והחיבורים הסופיים נבדקו.', responsible: 'בקרת איכות', sortOrder: 15 },
+  { workStage: 'אישור לפני מסירה', description: 'כל הברגים, הריתוכים והעוגנים הושלמו וסומנו.', responsible: 'קבלן', sortOrder: 16 },
+  { workStage: 'אישור לפני מסירה', description: 'תוצאות בדיקות הריתוך וההידוק התקבלו ואושרו.', responsible: 'בקרת איכות', sortOrder: 17 },
+  { workStage: 'אישור לפני מסירה', description: 'תיקוני גלוון/צבע והגנת קורוזיה הושלמו.', responsible: 'קבלן', sortOrder: 18 },
+  { workStage: 'אישור לפני מסירה', description: 'תמיכות זמניות הוסרו לאחר קבלת אישור.', responsible: 'קבלן', sortOrder: 19 },
+  { workStage: 'אישור לפני מסירה', description: 'הושלמו תוכניות עדות, תעודות חומר ודוחות בדיקה.', responsible: 'קבלן', sortOrder: 20 },
+];
+
+// פרק 22 - רכיבים מתועשים בבניין (20 סעיפים: 6+8+6)
+const CHAPTER_22_ITEMS = [
+  // פרק 1 – בקרה מקדימה (6 פריטים)
+  { workStage: 'בקרה מקדימה', description: 'קיימים תוכניות, פריסות, פרטים וסאבמיטלים מאושרים.', responsible: 'קבלן', sortOrder: 1 },
+  { workStage: 'בקרה מקדימה', description: 'סוגי הלוחות, השלד, הבידוד והאביזרים תואמים לאישור.', responsible: 'בקרת איכות', sortOrder: 2 },
+  { workStage: 'בקרה מקדימה', description: 'סומנו מיקומי מחיצות, פתחים, מפלסים וממשקי מערכות.', responsible: 'קבלן', sortOrder: 3 },
+  { workStage: 'בקרה מקדימה', description: 'התשתיות יבשות, נקיות ומוכנות להתקנה.', responsible: 'קבלן', sortOrder: 4 },
+  { workStage: 'בקרה מקדימה', description: 'רכיבים נשמרים יבשים, ישרים ומוגנים מפגיעה.', responsible: 'קבלן', sortOrder: 5 },
+  { workStage: 'בקרה מקדימה', description: 'דרישות אש, אקוסטיקה ורטיבות זוהו בתוכניות.', responsible: 'בקרת איכות', sortOrder: 6 },
+  // פרק 2 – בקרה שוטפת (8 פריטים)
+  { workStage: 'בקרה שוטפת', description: 'מסילות וניצבים מותקנים במיקום ובמרווחים הנדרשים.', responsible: 'קבלן', sortOrder: 7 },
+  { workStage: 'בקרה שוטפת', description: 'עיגונים וחיזוקים לפתחים, ציוד ואביזרים מבוצעים לפי הפרטים.', responsible: 'קבלן', sortOrder: 8 },
+  { workStage: 'בקרה שוטפת', description: 'מערכות ובידוד מותקנים לפני סגירת הדופן ומתועדים.', responsible: 'בקרת איכות', sortOrder: 9 },
+  { workStage: 'בקרה שוטפת', description: 'סוג, מספר ושכבות הלוחות תואמים לייעוד המחיצה.', responsible: 'בקרת איכות', sortOrder: 10 },
+  { workStage: 'בקרה שוטפת', description: 'ברגים מותקנים במרווח ובעומק המתאימים ללא פגיעה בלוח.', responsible: 'קבלן', sortOrder: 11 },
+  { workStage: 'בקרה שוטפת', description: 'מישקים, פינות וראשי ברגים מטופלים במערכת המאושרת.', responsible: 'קבלן', sortOrder: 12 },
+  { workStage: 'בקרה שוטפת', description: 'חיבורים לרצפה, לתקרה ולקירות סמוכים מבוצעים לפי הפרט.', responsible: 'קבלן', sortOrder: 13 },
+  { workStage: 'בקרה שוטפת', description: 'הגנה מאש, אקוסטיקה ואיטום חדירות נשמרים ברציפות.', responsible: 'בקרת איכות', sortOrder: 14 },
+  // פרק 3 – אישור לפני מסירה (6 פריטים)
+  { workStage: 'אישור לפני מסירה', description: 'מידות, מישוריות, אנכיות ומיקום פתחים נבדקו.', responsible: 'בקרת איכות', sortOrder: 15 },
+  { workStage: 'אישור לפני מסירה', description: 'אין לוחות שבורים, רטובים, מעוותים או חיבורים רופפים.', responsible: 'בקרת איכות', sortOrder: 16 },
+  { workStage: 'אישור לפני מסירה', description: 'המישקים והגמר אחידים ללא סדקים או בליטות.', responsible: 'קבלן', sortOrder: 17 },
+  { workStage: 'אישור לפני מסירה', description: 'חיזוקים, פתחים ואביזרים הושלמו.', responsible: 'קבלן', sortOrder: 18 },
+  { workStage: 'אישור לפני מסירה', description: 'בוצעו בדיקות אש/אקוסטיקה ככל שנדרשו.', responsible: 'בקרת איכות', sortOrder: 19 },
+  { workStage: 'אישור לפני מסירה', description: 'הושלמו תיקונים, תיעוד והכנה לצבע/חיפוי.', responsible: 'קבלן', sortOrder: 20 },
+];
+
+// פרק 34 - מערכות גילוי וכיבוי אש (19 סעיפים: 6+7+6)
+const CHAPTER_34_ITEMS = [
+  // פרק 1 – בקרה מקדימה (6 פריטים)
+  { workStage: 'בקרה מקדימה', description: 'קיימים תוכניות מאושרות, מטריצת הפעלות וסאבמיטלים.', responsible: 'קבלן', sortOrder: 1 },
+  { workStage: 'בקרה מקדימה', description: 'הציוד והאביזרים תואמים לאישור ולייעוד המערכת.', responsible: 'בקרת איכות', sortOrder: 2 },
+  { workStage: 'בקרה מקדימה', description: 'מיקומי ציוד, צנרת, גלאים ומתזים תואמו עם יתר המערכות.', responsible: 'קבלן', sortOrder: 3 },
+  { workStage: 'בקרה מקדימה', description: 'מקורות מים/חשמל, פתחים ותשתיות מוכנים.', responsible: 'קבלן', sortOrder: 4 },
+  { workStage: 'בקרה מקדימה', description: 'ציוד מאוחסן מוגן ועם סימון זיהוי.', responsible: 'קבלן', sortOrder: 5 },
+  { workStage: 'בקרה מקדימה', description: 'נקבעו בדיקות, אינטגרציה ואישורי גורמים מוסמכים.', responsible: 'בקרת איכות', sortOrder: 6 },
+  // פרק 2 – בקרה שוטפת (7 פריטים)
+  { workStage: 'בקרה שוטפת', description: 'צנרת, כבלים וציוד מותקנים בתוואי ובתמיכות הנדרשות.', responsible: 'קבלן', sortOrder: 7 },
+  { workStage: 'בקרה שוטפת', description: 'גלאים, מתזים ואביזרים מותקנים במיקום ובכיסוי המתוכננים.', responsible: 'קבלן', sortOrder: 8 },
+  { workStage: 'בקרה שוטפת', description: 'מגופים, תחנות שליטה וציוד נגישים ומסומנים.', responsible: 'קבלן', sortOrder: 9 },
+  { workStage: 'בקרה שוטפת', description: 'חיבורים, הארקות, אטימות ומעברי אש מבוצעים כנדרש.', responsible: 'בקרת איכות', sortOrder: 10 },
+  { workStage: 'בקרה שוטפת', description: 'המערכת מוגנת מלכלוך ומפגיעה במהלך העבודות.', responsible: 'קבלן', sortOrder: 11 },
+  { workStage: 'בקרה שוטפת', description: 'בדיקות לחץ, שטיפה ורציפות מתועדות לפני סגירה.', responsible: 'בקרת איכות', sortOrder: 12 },
+  { workStage: 'בקרה שוטפת', description: 'ממשקים למערכות אחרות מחוברים לפי מטריצת ההפעלות.', responsible: 'קבלן', sortOrder: 13 },
+  // פרק 3 – אישור לפני מסירה (6 פריטים)
+  { workStage: 'אישור לפני מסירה', description: 'בוצעו בדיקות הפעלה לכל רכיבי המערכת.', responsible: 'בקרת איכות', sortOrder: 14 },
+  { workStage: 'אישור לפני מסירה', description: 'בוצעה בדיקת אינטגרציה בהתאם למטריצת ההפעלות.', responsible: 'בקרת איכות', sortOrder: 15 },
+  { workStage: 'אישור לפני מסירה', description: 'לחצים, ספיקות, התרעות, חיוויים ופקודות נמצאו תקינים.', responsible: 'בקרת איכות', sortOrder: 16 },
+  { workStage: 'אישור לפני מסירה', description: 'כל הציוד, המגופים והאזורים מסומנים.', responsible: 'קבלן', sortOrder: 17 },
+  { workStage: 'אישור לפני מסירה', description: 'התקבלו אישורי מעבדה/רשות/גורם מוסמך כנדרש.', responsible: 'בקרת איכות', sortOrder: 18 },
+  { workStage: 'אישור לפני מסירה', description: 'נמסרו תוכניות עדות, דוחות, הדרכה והוראות תחזוקה.', responsible: 'קבלן', sortOrder: 19 },
+];
+
 // ברירת מחדל לפרקים שאין להם תבנית ספציפית
 const DEFAULT_CHECKLIST_ITEMS = [
   { workStage: 'בקרה מקדימה', description: 'בדיקת תוכניות ומסמכים מאושרים', responsible: 'בקרת איכות', sortOrder: 1 },
@@ -299,6 +458,12 @@ const CHAPTER_CHECKLIST_ITEMS: Record<string, typeof DEFAULT_CHECKLIST_ITEMS> = 
   '09': CHAPTER_09_ITEMS,
   '10': CHAPTER_10_ITEMS,
   '11': CHAPTER_11_ITEMS,
+  '12': CHAPTER_12_ITEMS,
+  '14': CHAPTER_14_ITEMS,
+  '15': CHAPTER_15_ITEMS,
+  '19': CHAPTER_19_ITEMS,
+  '22': CHAPTER_22_ITEMS,
+  '34': CHAPTER_34_ITEMS,
 };
 
 function getChecklistItemsForChapter(chapterCode: string) {
