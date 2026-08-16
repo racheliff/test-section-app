@@ -16,6 +16,8 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [showNewForm, setShowNewForm] = useState(false);
   const [newProject, setNewProject] = useState({ name: '', code: '', logoUrl: '' });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
 
   useEffect(() => {
     fetchProjects();
@@ -54,6 +56,28 @@ export default function HomePage() {
       }
     } catch (error) {
       console.error('Error creating project:', error);
+    }
+  };
+
+  const handleUpdateProject = async (projectId: string) => {
+    if (!editingName.trim()) return;
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editingName }),
+      });
+
+      if (res.ok) {
+        setProjects(prev => prev.map(p =>
+          p.id === projectId ? { ...p, name: editingName } : p
+        ));
+        setEditingId(null);
+        setEditingName('');
+      }
+    } catch (error) {
+      console.error('Error updating project:', error);
     }
   };
 
@@ -178,10 +202,9 @@ export default function HomePage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects.map((project) => (
-              <Link
+              <div
                 key={project.id}
-                href={`/projects/${project.id}`}
-                className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer border-2 border-transparent hover:border-blue-500"
+                className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
               >
                 <div className="flex items-start gap-4">
                   {project.logoUrl && (
@@ -193,13 +216,60 @@ export default function HomePage() {
                   )}
                   <div className="flex-grow">
                     <div className="text-sm text-blue-600 font-medium mb-1">{project.code}</div>
-                    <h2 className="text-xl font-semibold text-gray-800 mb-2">{project.name}</h2>
-                    <div className="text-sm text-gray-500">
+                    {editingId === project.id ? (
+                      <div className="flex gap-2 mb-2">
+                        <input
+                          type="text"
+                          value={editingName}
+                          onChange={(e) => setEditingName(e.target.value)}
+                          className="flex-grow p-1 border border-gray-300 rounded text-lg font-semibold"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleUpdateProject(project.id);
+                            if (e.key === 'Escape') { setEditingId(null); setEditingName(''); }
+                          }}
+                        />
+                        <button
+                          onClick={() => handleUpdateProject(project.id)}
+                          className="px-2 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => { setEditingId(null); setEditingName(''); }}
+                          className="px-2 py-1 bg-gray-300 text-gray-700 rounded text-sm hover:bg-gray-400"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 mb-2">
+                        <h2 className="text-xl font-semibold text-gray-800">{project.name}</h2>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingId(project.id);
+                            setEditingName(project.name);
+                          }}
+                          className="text-gray-400 hover:text-blue-500 text-sm"
+                          title="ערוך שם"
+                        >
+                          ✏️
+                        </button>
+                      </div>
+                    )}
+                    <div className="text-sm text-gray-500 mb-3">
                       נוצר: {new Date(project.createdAt).toLocaleDateString('he-IL')}
                     </div>
+                    <Link
+                      href={`/projects/${project.id}`}
+                      className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
+                    >
+                      פתח פרויקט
+                    </Link>
                   </div>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}
