@@ -30,8 +30,32 @@ export async function GET(
   }
 }
 
-export async function DELETE(
+export async function PUT(
   request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const data = await request.json();
+
+    const project = await prisma.project.update({
+      where: { id },
+      data: {
+        name: data.name !== undefined ? data.name : undefined,
+        code: data.code !== undefined ? data.code : undefined,
+        logoUrl: data.logoUrl !== undefined ? data.logoUrl : undefined,
+      },
+    });
+
+    return NextResponse.json(project);
+  } catch (error) {
+    console.error('Error updating project:', error);
+    return NextResponse.json({ error: 'Failed to update project' }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {

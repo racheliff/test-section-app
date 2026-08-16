@@ -8,6 +8,7 @@ interface Project {
   id: string;
   code: string;
   name: string;
+  logoUrl: string | null;
   createdAt: string;
 }
 
@@ -76,6 +77,23 @@ export default function ProjectDetailPage() {
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLogoUpload = async (logoUrl: string) => {
+    try {
+      const res = await fetch(`/api/projects/${params.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ logoUrl }),
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        setProject(updated);
+      }
+    } catch (error) {
+      console.error('Error uploading logo:', error);
     }
   };
 
@@ -255,10 +273,66 @@ export default function ProjectDetailPage() {
         </Link>
 
         <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
-          <div className="text-sm text-blue-600 font-medium mb-2">{project.code}</div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">{project.name}</h1>
-          <div className="text-gray-500">
-            נוצר: {new Date(project.createdAt).toLocaleDateString('he-IL')}
+          <div className="flex items-start gap-6">
+            {/* Logo Section */}
+            <div className="flex-shrink-0">
+              {project.logoUrl ? (
+                <div className="relative group">
+                  <img
+                    src={project.logoUrl}
+                    alt="לוגו הפרויקט"
+                    className="w-24 h-24 object-contain rounded-lg border border-gray-200"
+                  />
+                  <label className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            handleLogoUpload(event.target?.result as string);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                    <span className="text-white text-sm">החלף</span>
+                  </label>
+                </div>
+              ) : (
+                <label className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          handleLogoUpload(event.target?.result as string);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                  <span className="text-2xl text-gray-400">📷</span>
+                  <span className="text-xs text-gray-400 mt-1">העלה לוגו</span>
+                </label>
+              )}
+            </div>
+
+            {/* Project Info */}
+            <div className="flex-grow">
+              <div className="text-sm text-blue-600 font-medium mb-2">{project.code}</div>
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">{project.name}</h1>
+              <div className="text-gray-500">
+                נוצר: {new Date(project.createdAt).toLocaleDateString('he-IL')}
+              </div>
+            </div>
           </div>
         </div>
 
