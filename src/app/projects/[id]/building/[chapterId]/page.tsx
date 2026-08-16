@@ -36,6 +36,7 @@ interface ChecklistItem {
   isCompleted: boolean;
   status: string;
   sortOrder: number;
+  imageUrl: string | null;
 }
 
 interface Checklist {
@@ -156,6 +157,31 @@ export default function ChapterDetailPage() {
     })));
   };
 
+  // העלאת תמונה
+  const handleImageUpload = async (itemId: string, imageUrl: string | null) => {
+    handleLocalUpdate(itemId, 'imageUrl', imageUrl || '');
+    try {
+      const item = checklists.flatMap(c => c.items).find(i => i.id === itemId);
+      if (!item) return;
+
+      await fetch(`/api/checklist-items/${itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: item.name,
+          signature: item.signature,
+          date: item.date,
+          notes: item.notes,
+          isCompleted: item.isCompleted,
+          status: item.status || 'pending',
+          imageUrl: imageUrl,
+        }),
+      });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    }
+  };
+
   // שמירה ל-DB (נקרא ב-onBlur או בלחיצה על כפתור)
   const handleSaveItem = async (itemId: string) => {
     try {
@@ -172,6 +198,7 @@ export default function ChapterDetailPage() {
           notes: item.notes,
           isCompleted: item.isCompleted,
           status: item.status || 'pending',
+          imageUrl: item.imageUrl,
         }),
       });
     } catch (error) {
@@ -192,6 +219,7 @@ export default function ChapterDetailPage() {
         notes: item.notes,
         isCompleted: item.isCompleted,
         status: item.status || 'pending',
+        imageUrl: item.imageUrl,
       };
       updateData[field] = value;
 
@@ -828,6 +856,44 @@ export default function ChapterDetailPage() {
                                           placeholder="הוסף הערה..."
                                           className="w-full p-2.5 border border-gray-300 rounded-lg text-sm"
                                         />
+                                      </div>
+                                      <div>
+                                        <label className="block text-sm font-medium text-gray-500 mb-1">תמונה</label>
+                                        {item.imageUrl ? (
+                                          <div className="relative">
+                                            <img
+                                              src={item.imageUrl}
+                                              alt="תמונה מצורפת"
+                                              className="w-full max-h-40 object-cover rounded-lg border border-gray-300"
+                                            />
+                                            <button
+                                              onClick={() => handleImageUpload(item.id, null)}
+                                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
+                                            >
+                                              ✕
+                                            </button>
+                                          </div>
+                                        ) : (
+                                          <label className="flex items-center justify-center w-full p-3 border border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                                            <input
+                                              type="file"
+                                              accept="image/*"
+                                              className="hidden"
+                                              onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                  const reader = new FileReader();
+                                                  reader.onload = (event) => {
+                                                    const base64 = event.target?.result as string;
+                                                    handleImageUpload(item.id, base64);
+                                                  };
+                                                  reader.readAsDataURL(file);
+                                                }
+                                              }}
+                                            />
+                                            <span className="text-sm text-gray-500">📷 הוסף תמונה</span>
+                                          </label>
+                                        )}
                                       </div>
                                     </div>
                                   </div>

@@ -18,6 +18,7 @@ export async function PUT(
         notes: data.notes,
         isCompleted: data.isCompleted,
         status: data.status,
+        imageUrl: data.imageUrl,
       },
     });
 
