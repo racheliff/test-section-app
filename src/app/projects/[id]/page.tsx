@@ -343,20 +343,14 @@ export default function ProjectDetailPage() {
             href={`/projects/${project.id}/building`}
             className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-all cursor-pointer border-2 border-transparent hover:border-blue-500 group"
           >
-            <div className="flex items-center gap-6">
-              <div className="flex-grow text-right">
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">תיק מבנה</h3>
-                <p className="text-gray-500">מפרטים, פרקים ובדיקות למבנה</p>
+            <div className="text-center">
+              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-200 transition-colors">
+                <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
               </div>
-              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-blue-200 transition-colors overflow-hidden">
-                {project.logoUrl ? (
-                  <img src={project.logoUrl} alt="לוגו" className="w-16 h-16 object-contain" />
-                ) : (
-                  <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                )}
-              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">תיק מבנה</h3>
+              <p className="text-gray-500">מפרטים, פרקים ובדיקות למבנה</p>
             </div>
           </Link>
 
@@ -364,20 +358,14 @@ export default function ProjectDetailPage() {
             href={`/projects/${project.id}/development`}
             className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-all cursor-pointer border-2 border-transparent hover:border-green-500 group"
           >
-            <div className="flex items-center gap-6">
-              <div className="flex-grow text-right">
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">תיק פיתוח</h3>
-                <p className="text-gray-500">מפרטים, פרקים ובדיקות לפיתוח</p>
+            <div className="text-center">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-green-200 transition-colors">
+                <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                </svg>
               </div>
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-green-200 transition-colors overflow-hidden">
-                {project.logoUrl ? (
-                  <img src={project.logoUrl} alt="לוגו" className="w-16 h-16 object-contain" />
-                ) : (
-                  <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                  </svg>
-                )}
-              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">תיק פיתוח</h3>
+              <p className="text-gray-500">מפרטים, פרקים ובדיקות לפיתוח</p>
             </div>
           </Link>
         </div>
