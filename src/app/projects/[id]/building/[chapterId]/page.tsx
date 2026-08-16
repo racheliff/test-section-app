@@ -36,7 +36,7 @@ interface ChecklistItem {
   isCompleted: boolean;
   status: string;
   sortOrder: number;
-  imageUrl: string | null;
+  images: string[];
 }
 
 interface Checklist {
@@ -157,13 +157,22 @@ export default function ChapterDetailPage() {
     })));
   };
 
-  // העלאת תמונה
-  const handleImageUpload = async (itemId: string, imageUrl: string | null) => {
-    handleLocalUpdate(itemId, 'imageUrl', imageUrl || '');
-    try {
-      const item = checklists.flatMap(c => c.items).find(i => i.id === itemId);
-      if (!item) return;
+  // הוספת תמונה
+  const handleAddImage = async (itemId: string, imageUrl: string) => {
+    const item = checklists.flatMap(c => c.items).find(i => i.id === itemId);
+    if (!item) return;
 
+    const currentImages = Array.isArray(item.images) ? item.images : [];
+    const newImages = [...currentImages, imageUrl];
+
+    setChecklists(prev => prev.map(checklist => ({
+      ...checklist,
+      items: checklist.items.map(i =>
+        i.id === itemId ? { ...i, images: newImages } : i
+      ),
+    })));
+
+    try {
       await fetch(`/api/checklist-items/${itemId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -174,11 +183,45 @@ export default function ChapterDetailPage() {
           notes: item.notes,
           isCompleted: item.isCompleted,
           status: item.status || 'pending',
-          imageUrl: imageUrl,
+          images: newImages,
         }),
       });
     } catch (error) {
       console.error('Error uploading image:', error);
+    }
+  };
+
+  // מחיקת תמונה
+  const handleRemoveImage = async (itemId: string, imageIndex: number) => {
+    const item = checklists.flatMap(c => c.items).find(i => i.id === itemId);
+    if (!item) return;
+
+    const currentImages = Array.isArray(item.images) ? item.images : [];
+    const newImages = currentImages.filter((_, idx) => idx !== imageIndex);
+
+    setChecklists(prev => prev.map(checklist => ({
+      ...checklist,
+      items: checklist.items.map(i =>
+        i.id === itemId ? { ...i, images: newImages } : i
+      ),
+    })));
+
+    try {
+      await fetch(`/api/checklist-items/${itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: item.name,
+          signature: item.signature,
+          date: item.date,
+          notes: item.notes,
+          isCompleted: item.isCompleted,
+          status: item.status || 'pending',
+          images: newImages,
+        }),
+      });
+    } catch (error) {
+      console.error('Error removing image:', error);
     }
   };
 
@@ -198,7 +241,7 @@ export default function ChapterDetailPage() {
           notes: item.notes,
           isCompleted: item.isCompleted,
           status: item.status || 'pending',
-          imageUrl: item.imageUrl,
+          images: item.images,
         }),
       });
     } catch (error) {
@@ -212,14 +255,14 @@ export default function ChapterDetailPage() {
       const item = checklists.flatMap(c => c.items).find(i => i.id === itemId);
       if (!item) return;
 
-      const updateData: Record<string, string | boolean | null> = {
+      const updateData: Record<string, string | boolean | null | string[]> = {
         name: item.name,
         signature: item.signature,
         date: item.date,
         notes: item.notes,
         isCompleted: item.isCompleted,
         status: item.status || 'pending',
-        imageUrl: item.imageUrl,
+        images: item.images,
       };
       updateData[field] = value;
 
@@ -866,23 +909,30 @@ export default function ChapterDetailPage() {
                                         />
                                       </div>
                                       <div>
-                                        <label className="block text-sm font-medium text-gray-500 mb-1">תמונה</label>
-                                        {item.imageUrl ? (
-                                          <div className="relative">
-                                            <img
-                                              src={item.imageUrl}
-                                              alt="תמונה מצורפת"
-                                              className="w-full max-h-40 object-cover rounded-lg border border-gray-300"
-                                            />
-                                            <button
-                                              onClick={() => handleImageUpload(item.id, null)}
-                                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
-                                            >
-                                              ✕
-                                            </button>
-                                          </div>
-                                        ) : (
-                                          <label className="flex items-center justify-center w-full p-3 border border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                                        <label className="block text-sm font-medium text-gray-500 mb-1">תמונות</label>
+                                        <div className="space-y-2">
+                                          {/* תמונות קיימות */}
+                                          {Array.isArray(item.images) && item.images.length > 0 && (
+                                            <div className="grid grid-cols-3 gap-2">
+                                              {item.images.map((img, idx) => (
+                                                <div key={idx} className="relative group">
+                                                  <img
+                                                    src={img}
+                                                    alt={`תמונה ${idx + 1}`}
+                                                    className="w-full h-20 object-cover rounded-lg border border-gray-300"
+                                                  />
+                                                  <button
+                                                    onClick={() => handleRemoveImage(item.id, idx)}
+                                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                                                  >
+                                                    ✕
+                                                  </button>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          )}
+                                          {/* כפתור הוספת תמונה */}
+                                          <label className="flex items-center justify-center w-full p-2 border border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
                                             <input
                                               type="file"
                                               accept="image/*"
@@ -893,7 +943,7 @@ export default function ChapterDetailPage() {
                                                   const reader = new FileReader();
                                                   reader.onload = (event) => {
                                                     const base64 = event.target?.result as string;
-                                                    handleImageUpload(item.id, base64);
+                                                    handleAddImage(item.id, base64);
                                                   };
                                                   reader.readAsDataURL(file);
                                                 }
@@ -901,7 +951,7 @@ export default function ChapterDetailPage() {
                                             />
                                             <span className="text-sm text-gray-500">📷 הוסף תמונה</span>
                                           </label>
-                                        )}
+                                        </div>
                                       </div>
                                     </div>
                                   </div>

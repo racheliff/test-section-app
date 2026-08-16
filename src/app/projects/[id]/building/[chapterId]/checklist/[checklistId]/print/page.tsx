@@ -14,7 +14,7 @@ interface ChecklistItem {
   notes: string | null;
   status: string;
   sortOrder: number;
-  imageUrl: string | null;
+  images: string[];
 }
 
 interface Checklist {
@@ -281,20 +281,25 @@ export default function PrintChecklistPage() {
         })}
 
         {/* Images Section */}
-        {checklist.items.some(item => item.imageUrl) && (
+        {checklist.items.some(item => Array.isArray(item.images) && item.images.length > 0) && (
           <div className="mb-6 page-break-before">
             <h2 className="text-base font-bold text-blue-700 mb-2 border-b border-gray-300 pb-1">
               תמונות מצורפות
             </h2>
             <div className="grid grid-cols-2 gap-4">
-              {checklist.items.filter(item => item.imageUrl).map((item) => (
+              {checklist.items.filter(item => Array.isArray(item.images) && item.images.length > 0).map((item) => (
                 <div key={item.id} className="border border-gray-300 rounded p-2">
                   <p className="text-xs font-bold mb-1">{item.description}</p>
-                  <img
-                    src={item.imageUrl!}
-                    alt={item.description}
-                    className="w-full h-32 object-cover rounded"
-                  />
+                  <div className="grid grid-cols-2 gap-1">
+                    {item.images.map((img, idx) => (
+                      <img
+                        key={idx}
+                        src={img}
+                        alt={`${item.description} - ${idx + 1}`}
+                        className="w-full h-24 object-cover rounded"
+                      />
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>

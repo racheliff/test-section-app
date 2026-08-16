@@ -91,7 +91,7 @@ model ChecklistItem {
   isCompleted  Boolean  @default(false)
   status       String   @default("pending")
   sortOrder    Int      @default(0)
-  imageUrl     String?  @db.Text
+  images       Json     @default("[]")
 
   checklist Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
 }
