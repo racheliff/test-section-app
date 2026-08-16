@@ -679,6 +679,14 @@ export default function ChapterDetailPage() {
                             <div className="text-2xl font-bold text-blue-600">{completedCount}/{totalCount}</div>
                             <div className="text-xs text-gray-500">הושלמו</div>
                           </div>
+                          <Link
+                            href={`/projects/${params.id}/building/${params.chapterId}/checklist/${checklist.id}/print`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="p-2 text-blue-500 hover:bg-blue-100 rounded-lg transition-colors"
+                            title="הדפס PDF"
+                          >
+                            🖨️
+                          </Link>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
