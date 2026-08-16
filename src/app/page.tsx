@@ -7,6 +7,7 @@ interface Project {
   id: string;
   code: string;
   name: string;
+  logoUrl: string | null;
   createdAt: string;
 }
 
@@ -14,7 +15,7 @@ export default function HomePage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNewForm, setShowNewForm] = useState(false);
-  const [newProject, setNewProject] = useState({ name: '', code: '' });
+  const [newProject, setNewProject] = useState({ name: '', code: '', logoUrl: '' });
 
   useEffect(() => {
     fetchProjects();
@@ -47,7 +48,7 @@ export default function HomePage() {
         body: JSON.stringify(newProject),
       });
       if (res.ok) {
-        setNewProject({ name: '', code: '' });
+        setNewProject({ name: '', code: '', logoUrl: '' });
         setShowNewForm(false);
         fetchProjects();
       }
@@ -107,6 +108,49 @@ export default function HomePage() {
                   required
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  לוגו (אופציונלי)
+                </label>
+                <div className="flex items-center gap-4">
+                  {newProject.logoUrl ? (
+                    <div className="relative">
+                      <img
+                        src={newProject.logoUrl}
+                        alt="לוגו"
+                        className="w-16 h-16 object-contain rounded-lg border border-gray-300"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setNewProject({ ...newProject, logoUrl: '' })}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="w-16 h-16 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              setNewProject({ ...newProject, logoUrl: event.target?.result as string });
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                      <span className="text-xl text-gray-400">📷</span>
+                    </label>
+                  )}
+                  <span className="text-sm text-gray-500">העלה לוגו לפרויקט</span>
+                </div>
+              </div>
               <div className="flex gap-3">
                 <button
                   type="submit"
@@ -139,10 +183,21 @@ export default function HomePage() {
                 href={`/projects/${project.id}`}
                 className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer border-2 border-transparent hover:border-blue-500"
               >
-                <div className="text-sm text-blue-600 font-medium mb-2">{project.code}</div>
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">{project.name}</h2>
-                <div className="text-sm text-gray-500">
-                  נוצר: {new Date(project.createdAt).toLocaleDateString('he-IL')}
+                <div className="flex items-start gap-4">
+                  {project.logoUrl && (
+                    <img
+                      src={project.logoUrl}
+                      alt="לוגו"
+                      className="w-14 h-14 object-contain rounded-lg border border-gray-200 flex-shrink-0"
+                    />
+                  )}
+                  <div className="flex-grow">
+                    <div className="text-sm text-blue-600 font-medium mb-1">{project.code}</div>
+                    <h2 className="text-xl font-semibold text-gray-800 mb-2">{project.name}</h2>
+                    <div className="text-sm text-gray-500">
+                      נוצר: {new Date(project.createdAt).toLocaleDateString('he-IL')}
+                    </div>
+                  </div>
                 </div>
               </Link>
             ))}

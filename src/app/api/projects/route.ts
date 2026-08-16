@@ -22,6 +22,7 @@ export async function POST(request: NextRequest) {
       data: {
         name: data.name,
         code: data.code,
+        logoUrl: data.logoUrl || null,
       },
     });
 
