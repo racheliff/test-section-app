@@ -200,7 +200,7 @@ export default function HomePage() {
             <p className="text-gray-400 mt-2">לחץ על &quot;הוסף פרויקט&quot; כדי להתחיל</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {projects.map((project) => (
               <div
                 key={project.id}
@@ -214,33 +214,35 @@ export default function HomePage() {
                       className="w-14 h-14 object-contain rounded-lg border border-gray-200 flex-shrink-0"
                     />
                   )}
-                  <div className="flex-grow">
+                  <div className="flex-grow min-w-0">
                     <div className="text-sm text-blue-600 font-medium mb-1">{project.code}</div>
                     {editingId === project.id ? (
-                      <div className="flex gap-2 mb-2">
+                      <div className="mb-2">
                         <input
                           type="text"
                           value={editingName}
                           onChange={(e) => setEditingName(e.target.value)}
-                          className="flex-grow p-1 border border-gray-300 rounded text-lg font-semibold"
+                          className="w-full p-1.5 border border-gray-300 rounded text-base font-semibold mb-2"
                           autoFocus
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') handleUpdateProject(project.id);
                             if (e.key === 'Escape') { setEditingId(null); setEditingName(''); }
                           }}
                         />
-                        <button
-                          onClick={() => handleUpdateProject(project.id)}
-                          className="px-2 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
-                        >
-                          ✓
-                        </button>
-                        <button
-                          onClick={() => { setEditingId(null); setEditingName(''); }}
-                          className="px-2 py-1 bg-gray-300 text-gray-700 rounded text-sm hover:bg-gray-400"
-                        >
-                          ✕
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleUpdateProject(project.id)}
+                            className="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+                          >
+                            שמור
+                          </button>
+                          <button
+                            onClick={() => { setEditingId(null); setEditingName(''); }}
+                            className="px-3 py-1 bg-gray-300 text-gray-700 rounded text-sm hover:bg-gray-400"
+                          >
+                            ביטול
+                          </button>
+                        </div>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2 mb-2">
