@@ -217,48 +217,35 @@ export default function HomePage() {
                   <div className="flex-grow min-w-0">
                     <div className="text-sm text-blue-600 font-medium mb-1">{project.code}</div>
                     {editingId === project.id ? (
-                      <div className="mb-2">
-                        <input
-                          type="text"
-                          value={editingName}
-                          onChange={(e) => setEditingName(e.target.value)}
-                          className="w-full p-1.5 border border-gray-300 rounded text-base font-semibold mb-2"
-                          autoFocus
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleUpdateProject(project.id);
-                            if (e.key === 'Escape') { setEditingId(null); setEditingName(''); }
-                          }}
-                        />
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleUpdateProject(project.id)}
-                            className="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
-                          >
-                            שמור
-                          </button>
-                          <button
-                            onClick={() => { setEditingId(null); setEditingName(''); }}
-                            className="px-3 py-1 bg-gray-300 text-gray-700 rounded text-sm hover:bg-gray-400"
-                          >
-                            ביטול
-                          </button>
-                        </div>
-                      </div>
+                      <input
+                        type="text"
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        className="w-full text-xl font-semibold text-gray-800 bg-blue-50 border-b-2 border-blue-500 outline-none mb-2 px-1"
+                        autoFocus
+                        onBlur={() => handleUpdateProject(project.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.currentTarget.blur();
+                          }
+                          if (e.key === 'Escape') {
+                            setEditingId(null);
+                            setEditingName('');
+                          }
+                        }}
+                      />
                     ) : (
-                      <div className="flex items-center gap-2 mb-2">
-                        <h2 className="text-xl font-semibold text-gray-800">{project.name}</h2>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingId(project.id);
-                            setEditingName(project.name);
-                          }}
-                          className="text-gray-400 hover:text-blue-500 text-sm"
-                          title="ערוך שם"
-                        >
-                          ✏️
-                        </button>
-                      </div>
+                      <h2
+                        className="text-xl font-semibold text-gray-800 mb-2 cursor-pointer hover:text-blue-600 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingId(project.id);
+                          setEditingName(project.name);
+                        }}
+                        title="לחץ לעריכה"
+                      >
+                        {project.name}
+                      </h2>
                     )}
                     <div className="text-sm text-gray-500 mb-3">
                       נוצר: {new Date(project.createdAt).toLocaleDateString('he-IL')}
