@@ -24,6 +24,28 @@ interface TestSection {
   status: string;
 }
 
+interface NonConformance {
+  description: string;
+  requirement: string;
+  documentNumber: string;
+  severity: 'minor' | 'significant' | 'critical';
+  correctiveAction: string;
+  responsiblePerson: string;
+  dueDate: string;
+  signature: string | null;
+  attachments: string[];
+}
+
+interface Correction {
+  description: string;
+  date: string;
+  performedBy: string;
+  attachments: string[];
+  inspectorNotes: string;
+  inspectorName: string;
+  inspectorSignature: string | null;
+}
+
 interface ChecklistItem {
   id: string;
   workStage: string;
@@ -37,6 +59,8 @@ interface ChecklistItem {
   status: string;
   sortOrder: number;
   images: string[];
+  nonConformance: NonConformance | null;
+  correction: Correction | null;
 }
 
 interface Checklist {
@@ -83,6 +107,33 @@ export default function ChapterDetailPage() {
   const [signatureModal, setSignatureModal] = useState<{ itemId: string; checklistId: string } | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'checklists' | 'nonConformances'>('checklists');
+
+  // מודל אי-התאמה
+  const [nonConformanceModal, setNonConformanceModal] = useState<{ itemId: string } | null>(null);
+  const [nonConformanceForm, setNonConformanceForm] = useState<NonConformance>({
+    description: '',
+    requirement: '',
+    documentNumber: '',
+    severity: 'minor',
+    correctiveAction: '',
+    responsiblePerson: '',
+    dueDate: '',
+    signature: null,
+    attachments: [],
+  });
+
+  // מודל תיקון
+  const [correctionModal, setCorrectionModal] = useState<{ itemId: string } | null>(null);
+  const [correctionForm, setCorrectionForm] = useState<Correction>({
+    description: '',
+    date: new Date().toISOString().split('T')[0],
+    performedBy: '',
+    attachments: [],
+    inspectorNotes: '',
+    inspectorName: '',
+    inspectorSignature: null,
+  });
 
   useEffect(() => {
     if (params.chapterId) {
@@ -300,6 +351,125 @@ export default function ChapterDetailPage() {
       })));
     } catch (error) {
       console.error('Error updating item:', error);
+    }
+  };
+
+  // פתיחת טופס אי-התאמה
+  const openNonConformanceModal = (itemId: string) => {
+    const item = checklists.flatMap(c => c.items).find(i => i.id === itemId);
+    if (item?.nonConformance) {
+      setNonConformanceForm(item.nonConformance);
+    } else {
+      setNonConformanceForm({
+        description: '',
+        requirement: '',
+        documentNumber: '',
+        severity: 'minor',
+        correctiveAction: '',
+        responsiblePerson: '',
+        dueDate: '',
+        signature: null,
+        attachments: [],
+      });
+    }
+    setNonConformanceModal({ itemId });
+  };
+
+  // שמירת טופס אי-התאמה
+  const handleSaveNonConformance = async () => {
+    if (!nonConformanceModal) return;
+    const itemId = nonConformanceModal.itemId;
+
+    try {
+      const item = checklists.flatMap(c => c.items).find(i => i.id === itemId);
+      if (!item) return;
+
+      await fetch(`/api/checklist-items/${itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: item.name,
+          signature: item.signature,
+          date: new Date().toISOString(),
+          notes: item.notes,
+          isCompleted: false,
+          status: 'not_ok',
+          images: item.images,
+          nonConformance: nonConformanceForm,
+        }),
+      });
+
+      setChecklists(prev => prev.map(checklist => ({
+        ...checklist,
+        items: checklist.items.map(i =>
+          i.id === itemId
+            ? { ...i, status: 'not_ok', isCompleted: false, date: new Date().toISOString(), nonConformance: nonConformanceForm }
+            : i
+        ),
+      })));
+
+      setNonConformanceModal(null);
+    } catch (error) {
+      console.error('Error saving non-conformance:', error);
+    }
+  };
+
+  // פתיחת טופס תיקון
+  const openCorrectionModal = (itemId: string) => {
+    const item = checklists.flatMap(c => c.items).find(i => i.id === itemId);
+    if (item?.correction) {
+      setCorrectionForm(item.correction);
+    } else {
+      setCorrectionForm({
+        description: '',
+        date: new Date().toISOString().split('T')[0],
+        performedBy: '',
+        attachments: [],
+        inspectorNotes: '',
+        inspectorName: '',
+        inspectorSignature: null,
+      });
+    }
+    setCorrectionModal({ itemId });
+  };
+
+  // שמירת טופס תיקון
+  const handleSaveCorrection = async () => {
+    if (!correctionModal) return;
+    const itemId = correctionModal.itemId;
+
+    try {
+      const item = checklists.flatMap(c => c.items).find(i => i.id === itemId);
+      if (!item) return;
+
+      await fetch(`/api/checklist-items/${itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: item.name,
+          signature: item.signature,
+          date: new Date().toISOString(),
+          notes: item.notes,
+          isCompleted: true,
+          status: 'corrected',
+          images: item.images,
+          nonConformance: item.nonConformance,
+          correction: correctionForm,
+        }),
+      });
+
+      setChecklists(prev => prev.map(checklist => ({
+        ...checklist,
+        items: checklist.items.map(i =>
+          i.id === itemId
+            ? { ...i, status: 'corrected', isCompleted: true, date: new Date().toISOString(), correction: correctionForm }
+            : i
+        ),
+      })));
+
+      setCorrectionModal(null);
+    } catch (error) {
+      console.error('Error saving correction:', error);
     }
   };
 
@@ -526,7 +696,39 @@ export default function ChapterDetailPage() {
           </div>
         )}
 
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setActiveTab('checklists')}
+            className={`px-6 py-3 rounded-lg font-medium transition-all ${
+              activeTab === 'checklists'
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-300'
+            }`}
+          >
+            רשימות תיוג
+          </button>
+          <button
+            onClick={() => setActiveTab('nonConformances')}
+            className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
+              activeTab === 'nonConformances'
+                ? 'bg-red-600 text-white shadow-lg'
+                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-300'
+            }`}
+          >
+            אי-התאמות
+            {checklists.flatMap(c => c.items).filter(i => i.status === 'not_ok').length > 0 && (
+              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                activeTab === 'nonConformances' ? 'bg-white text-red-600' : 'bg-red-500 text-white'
+              }`}>
+                {checklists.flatMap(c => c.items).filter(i => i.status === 'not_ok').length}
+              </span>
+            )}
+          </button>
+        </div>
+
         {/* Checklists Section */}
+        {activeTab === 'checklists' && (
         <div className="mb-8">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold text-gray-700">רשימות תיוג</h2>
@@ -823,7 +1025,7 @@ export default function ChapterDetailPage() {
                                         תקין
                                       </button>
                                       <button
-                                        onClick={() => handleUpdateItem(item.id, 'status', 'not_ok')}
+                                        onClick={() => openNonConformanceModal(item.id)}
                                         className={`border rounded-lg p-2.5 text-sm font-medium transition-all ${
                                           item.status === 'not_ok'
                                             ? 'bg-red-500 border-red-500 text-white'
@@ -843,7 +1045,7 @@ export default function ChapterDetailPage() {
                                         לא רלוונטי
                                       </button>
                                       <button
-                                        onClick={() => handleUpdateItem(item.id, 'status', 'corrected')}
+                                        onClick={() => openCorrectionModal(item.id)}
                                         className={`border rounded-lg p-2.5 text-sm font-medium transition-all ${
                                           item.status === 'corrected'
                                             ? 'bg-violet-500 border-violet-500 text-white'
@@ -968,6 +1170,174 @@ export default function ChapterDetailPage() {
             </div>
           )}
         </div>
+        )}
+
+        {/* Non-Conformances Tab */}
+        {activeTab === 'nonConformances' && (
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold text-gray-700">רשימת אי-התאמות</h2>
+            </div>
+
+            {(() => {
+              const nonConformanceItems = checklists.flatMap(checklist =>
+                checklist.items
+                  .filter(item => item.status === 'not_ok' || item.status === 'corrected')
+                  .map(item => ({ ...item, checklistName: checklist.name, checklistId: checklist.id, building: checklist.building }))
+              );
+
+              if (nonConformanceItems.length === 0) {
+                return (
+                  <div className="text-center py-12 bg-white rounded-xl shadow">
+                    <div className="text-4xl mb-4">✓</div>
+                    <p className="text-gray-500 text-lg">אין אי-התאמות</p>
+                    <p className="text-gray-400 mt-2">כל הפריטים תקינים</p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="space-y-4">
+                  {/* Summary */}
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                      <div className="text-3xl font-bold text-red-600">
+                        {nonConformanceItems.filter(i => i.status === 'not_ok').length}
+                      </div>
+                      <div className="text-sm text-red-700">אי-התאמות פתוחות</div>
+                    </div>
+                    <div className="bg-violet-50 border border-violet-200 rounded-xl p-4 text-center">
+                      <div className="text-3xl font-bold text-violet-600">
+                        {nonConformanceItems.filter(i => i.status === 'corrected').length}
+                      </div>
+                      <div className="text-sm text-violet-700">תוקנו</div>
+                    </div>
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center">
+                      <div className="text-3xl font-bold text-gray-600">
+                        {nonConformanceItems.length}
+                      </div>
+                      <div className="text-sm text-gray-700">סה״כ</div>
+                    </div>
+                  </div>
+
+                  {/* List */}
+                  {nonConformanceItems.map((item, index) => (
+                    <div
+                      key={item.id}
+                      className={`bg-white rounded-xl shadow-lg p-5 border-r-4 ${
+                        item.status === 'not_ok' ? 'border-red-500' : 'border-violet-500'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center gap-3">
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                            item.status === 'not_ok'
+                              ? 'bg-red-100 text-red-700'
+                              : 'bg-violet-100 text-violet-700'
+                          }`}>
+                            {item.status === 'not_ok' ? 'לא תקין' : 'תוקן'}
+                          </span>
+                          <span className="text-sm text-gray-500">#{index + 1}</span>
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {item.date && new Date(item.date).toLocaleDateString('he-IL')}
+                        </div>
+                      </div>
+
+                      <h3 className="font-bold text-gray-800 mb-2">{item.description}</h3>
+
+                      <div className="text-sm text-gray-500 mb-3">
+                        <span className="font-medium">רשימת תיוג:</span> {item.checklistName}
+                        {item.building && <span className="mr-3">| <span className="font-medium">מבנה:</span> {item.building}</span>}
+                      </div>
+
+                      {item.nonConformance && (
+                        <div className="bg-red-50 rounded-lg p-4 mt-3 space-y-2">
+                          <h4 className="font-bold text-red-800 text-sm mb-2">פרטי אי-ההתאמה:</h4>
+                          {item.nonConformance.description && (
+                            <p className="text-sm"><span className="font-medium">תיאור:</span> {item.nonConformance.description}</p>
+                          )}
+                          {item.nonConformance.requirement && (
+                            <p className="text-sm"><span className="font-medium">דרישה:</span> {item.nonConformance.requirement}</p>
+                          )}
+                          {item.nonConformance.documentNumber && (
+                            <p className="text-sm"><span className="font-medium">מסמך:</span> {item.nonConformance.documentNumber}</p>
+                          )}
+                          <p className="text-sm">
+                            <span className="font-medium">חומרה:</span>{' '}
+                            <span className={`px-2 py-0.5 rounded text-xs ${
+                              item.nonConformance.severity === 'critical' ? 'bg-red-200 text-red-800' :
+                              item.nonConformance.severity === 'significant' ? 'bg-orange-200 text-orange-800' :
+                              'bg-yellow-200 text-yellow-800'
+                            }`}>
+                              {item.nonConformance.severity === 'critical' ? 'חמורה' :
+                               item.nonConformance.severity === 'significant' ? 'משמעותית' : 'קלה'}
+                            </span>
+                          </p>
+                          {item.nonConformance.correctiveAction && (
+                            <p className="text-sm"><span className="font-medium">פעולה מתקנת:</span> {item.nonConformance.correctiveAction}</p>
+                          )}
+                          {item.nonConformance.responsiblePerson && (
+                            <p className="text-sm"><span className="font-medium">אחראי:</span> {item.nonConformance.responsiblePerson}</p>
+                          )}
+                          {item.nonConformance.dueDate && (
+                            <p className="text-sm"><span className="font-medium">מועד יעד:</span> {new Date(item.nonConformance.dueDate).toLocaleDateString('he-IL')}</p>
+                          )}
+                          {item.nonConformance.attachments && item.nonConformance.attachments.length > 0 && (
+                            <div className="flex gap-2 mt-2">
+                              {item.nonConformance.attachments.map((att: string, idx: number) => (
+                                <img key={idx} src={att} alt={`צרופה ${idx + 1}`} className="w-16 h-16 object-cover rounded-lg border" />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {item.correction && item.status === 'corrected' && (
+                        <div className="bg-violet-50 rounded-lg p-4 mt-3 space-y-2">
+                          <h4 className="font-bold text-violet-800 text-sm mb-2">פרטי התיקון:</h4>
+                          {item.correction.description && (
+                            <p className="text-sm"><span className="font-medium">תיאור:</span> {item.correction.description}</p>
+                          )}
+                          {item.correction.performedBy && (
+                            <p className="text-sm"><span className="font-medium">בוצע ע״י:</span> {item.correction.performedBy}</p>
+                          )}
+                          {item.correction.date && (
+                            <p className="text-sm"><span className="font-medium">תאריך:</span> {new Date(item.correction.date).toLocaleDateString('he-IL')}</p>
+                          )}
+                          {item.correction.inspectorNotes && (
+                            <p className="text-sm"><span className="font-medium">הערות מפקח:</span> {item.correction.inspectorNotes}</p>
+                          )}
+                          {item.correction.inspectorName && (
+                            <p className="text-sm"><span className="font-medium">מפקח:</span> {item.correction.inspectorName}</p>
+                          )}
+                          {item.correction.attachments && item.correction.attachments.length > 0 && (
+                            <div className="flex gap-2 mt-2">
+                              {item.correction.attachments.map((att: string, idx: number) => (
+                                <img key={idx} src={att} alt={`צרופה ${idx + 1}`} className="w-16 h-16 object-cover rounded-lg border" />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {item.status === 'not_ok' && (
+                        <div className="mt-4 flex justify-end">
+                          <button
+                            onClick={() => openCorrectionModal(item.id)}
+                            className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors text-sm"
+                          >
+                            סמן כתוקן
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+        )}
       </div>
 
       {/* Signature Modal */}
@@ -1008,6 +1378,428 @@ export default function ChapterDetailPage() {
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 שמור
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Non-Conformance Modal - טופס אי-התאמה */}
+      {nonConformanceModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-red-600 text-white p-4 rounded-t-xl">
+              <h3 className="text-xl font-bold">טופס אי-התאמה</h3>
+            </div>
+            <div className="p-6 space-y-5">
+              {/* תיאור אי-ההתאמה */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">תיאור אי-ההתאמה:</label>
+                <textarea
+                  value={nonConformanceForm.description}
+                  onChange={(e) => setNonConformanceForm({ ...nonConformanceForm, description: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg text-sm"
+                  rows={3}
+                  placeholder="תאר את אי-ההתאמה שנמצאה..."
+                />
+              </div>
+
+              {/* הדרישה שלא מולאה */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">הדרישה שלא מולאה:</label>
+                <p className="text-xs text-gray-500 mb-1">תכנית / מפרט / תקן / נוהל / הוראת יצרן</p>
+                <input
+                  type="text"
+                  value={nonConformanceForm.requirement}
+                  onChange={(e) => setNonConformanceForm({ ...nonConformanceForm, requirement: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg text-sm"
+                  placeholder="לדוגמה: ת״י 466, מפרט 08..."
+                />
+              </div>
+
+              {/* מספר תכנית / סעיף */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">מספר תכנית / סעיף מפרט / תקן:</label>
+                <input
+                  type="text"
+                  value={nonConformanceForm.documentNumber}
+                  onChange={(e) => setNonConformanceForm({ ...nonConformanceForm, documentNumber: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg text-sm"
+                  placeholder="מספר סעיף או תכנית..."
+                />
+              </div>
+
+              {/* תיעוד מצורף */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">תיעוד מצורף:</label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {nonConformanceForm.attachments.map((att, idx) => (
+                    <div key={idx} className="relative">
+                      <img src={att} alt={`צרופה ${idx + 1}`} className="w-16 h-16 object-cover rounded-lg border" />
+                      <button
+                        onClick={() => setNonConformanceForm({
+                          ...nonConformanceForm,
+                          attachments: nonConformanceForm.attachments.filter((_, i) => i !== idx)
+                        })}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                  <label className="w-16 h-16 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-red-500 hover:bg-red-50">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            setNonConformanceForm({
+                              ...nonConformanceForm,
+                              attachments: [...nonConformanceForm.attachments, event.target?.result as string]
+                            });
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                    <span className="text-2xl text-gray-400">+</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* סיווג אי-ההתאמה - רמת חומרה */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">סיווג אי-ההתאמה - רמת חומרה:</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="severity"
+                      checked={nonConformanceForm.severity === 'minor'}
+                      onChange={() => setNonConformanceForm({ ...nonConformanceForm, severity: 'minor' })}
+                      className="w-4 h-4 text-yellow-500"
+                    />
+                    <span className="text-sm">קלה</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="severity"
+                      checked={nonConformanceForm.severity === 'significant'}
+                      onChange={() => setNonConformanceForm({ ...nonConformanceForm, severity: 'significant' })}
+                      className="w-4 h-4 text-orange-500"
+                    />
+                    <span className="text-sm">משמעותית</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="severity"
+                      checked={nonConformanceForm.severity === 'critical'}
+                      onChange={() => setNonConformanceForm({ ...nonConformanceForm, severity: 'critical' })}
+                      className="w-4 h-4 text-red-500"
+                    />
+                    <span className="text-sm">חמורה / קריטית</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* טיפול נדרש */}
+              <div className="border-t pt-4">
+                <h4 className="font-bold text-gray-800 mb-3">טיפול נדרש</h4>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">פעולה מתקנת מוצעת:</label>
+                    <textarea
+                      value={nonConformanceForm.correctiveAction}
+                      onChange={(e) => setNonConformanceForm({ ...nonConformanceForm, correctiveAction: e.target.value })}
+                      className="w-full p-3 border border-gray-300 rounded-lg text-sm"
+                      rows={2}
+                      placeholder="תאר את הפעולה המתקנת הנדרשת..."
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2">אחראי לביצוע התיקון:</label>
+                      <input
+                        type="text"
+                        value={nonConformanceForm.responsiblePerson}
+                        onChange={(e) => setNonConformanceForm({ ...nonConformanceForm, responsiblePerson: e.target.value })}
+                        className="w-full p-3 border border-gray-300 rounded-lg text-sm"
+                        placeholder="שם האחראי..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2">מועד נדרש להשלמת התיקון:</label>
+                      <input
+                        type="date"
+                        value={nonConformanceForm.dueDate}
+                        onChange={(e) => setNonConformanceForm({ ...nonConformanceForm, dueDate: e.target.value })}
+                        className="w-full p-3 border border-gray-300 rounded-lg text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">חתימת אחראי:</label>
+                    {nonConformanceForm.signature ? (
+                      <div className="relative inline-block">
+                        <img src={nonConformanceForm.signature} alt="חתימה" className="h-16 border rounded-lg p-2" />
+                        <button
+                          onClick={() => setNonConformanceForm({ ...nonConformanceForm, signature: null })}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <canvas
+                        id="ncSignatureCanvas"
+                        width={300}
+                        height={100}
+                        className="border border-gray-300 rounded-lg bg-white cursor-crosshair"
+                        onMouseDown={(e) => {
+                          const canvas = e.currentTarget;
+                          const ctx = canvas.getContext('2d');
+                          if (!ctx) return;
+                          const rect = canvas.getBoundingClientRect();
+                          ctx.beginPath();
+                          ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+                          canvas.dataset.drawing = 'true';
+                        }}
+                        onMouseMove={(e) => {
+                          const canvas = e.currentTarget;
+                          if (canvas.dataset.drawing !== 'true') return;
+                          const ctx = canvas.getContext('2d');
+                          if (!ctx) return;
+                          const rect = canvas.getBoundingClientRect();
+                          ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+                          ctx.stroke();
+                        }}
+                        onMouseUp={(e) => {
+                          const canvas = e.currentTarget;
+                          canvas.dataset.drawing = 'false';
+                          setNonConformanceForm({ ...nonConformanceForm, signature: canvas.toDataURL() });
+                        }}
+                        onMouseLeave={(e) => {
+                          const canvas = e.currentTarget;
+                          if (canvas.dataset.drawing === 'true') {
+                            canvas.dataset.drawing = 'false';
+                            setNonConformanceForm({ ...nonConformanceForm, signature: canvas.toDataURL() });
+                          }
+                        }}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex gap-3 justify-end p-4 border-t bg-gray-50 rounded-b-xl">
+              <button
+                onClick={() => setNonConformanceModal(null)}
+                className="px-5 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                ביטול
+              </button>
+              <button
+                onClick={handleSaveNonConformance}
+                className="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                שמור אי-התאמה
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Correction Modal - טופס תיקון */}
+      {correctionModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-violet-600 text-white p-4 rounded-t-xl">
+              <h3 className="text-xl font-bold">טופס תיקון</h3>
+            </div>
+            <div className="p-6 space-y-5">
+              {/* תיאור התיקון */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">תיאור התיקון שבוצע:</label>
+                <textarea
+                  value={correctionForm.description}
+                  onChange={(e) => setCorrectionForm({ ...correctionForm, description: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg text-sm"
+                  rows={3}
+                  placeholder="תאר את התיקון שבוצע..."
+                />
+              </div>
+
+              {/* תאריך ומבצע */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">תאריך ביצוע:</label>
+                  <input
+                    type="date"
+                    value={correctionForm.date}
+                    onChange={(e) => setCorrectionForm({ ...correctionForm, date: e.target.value })}
+                    className="w-full p-3 border border-gray-300 rounded-lg text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">בוצע על ידי:</label>
+                  <input
+                    type="text"
+                    value={correctionForm.performedBy}
+                    onChange={(e) => setCorrectionForm({ ...correctionForm, performedBy: e.target.value })}
+                    className="w-full p-3 border border-gray-300 rounded-lg text-sm"
+                    placeholder="שם המבצע..."
+                  />
+                </div>
+              </div>
+
+              {/* תיעוד מצורף */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">תיעוד מצורף:</label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {correctionForm.attachments.map((att, idx) => (
+                    <div key={idx} className="relative">
+                      <img src={att} alt={`צרופה ${idx + 1}`} className="w-16 h-16 object-cover rounded-lg border" />
+                      <button
+                        onClick={() => setCorrectionForm({
+                          ...correctionForm,
+                          attachments: correctionForm.attachments.filter((_, i) => i !== idx)
+                        })}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                  <label className="w-16 h-16 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-violet-500 hover:bg-violet-50">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            setCorrectionForm({
+                              ...correctionForm,
+                              attachments: [...correctionForm.attachments, event.target?.result as string]
+                            });
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                    <span className="text-2xl text-gray-400">+</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* אישור מפקח */}
+              <div className="border-t pt-4">
+                <h4 className="font-bold text-gray-800 mb-3">אישור מפקח</h4>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">הערות מפקח:</label>
+                    <textarea
+                      value={correctionForm.inspectorNotes}
+                      onChange={(e) => setCorrectionForm({ ...correctionForm, inspectorNotes: e.target.value })}
+                      className="w-full p-3 border border-gray-300 rounded-lg text-sm"
+                      rows={2}
+                      placeholder="הערות המפקח..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">שם המפקח:</label>
+                    <input
+                      type="text"
+                      value={correctionForm.inspectorName}
+                      onChange={(e) => setCorrectionForm({ ...correctionForm, inspectorName: e.target.value })}
+                      className="w-full p-3 border border-gray-300 rounded-lg text-sm"
+                      placeholder="שם המפקח..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">חתימת מפקח:</label>
+                    {correctionForm.inspectorSignature ? (
+                      <div className="relative inline-block">
+                        <img src={correctionForm.inspectorSignature} alt="חתימה" className="h-16 border rounded-lg p-2" />
+                        <button
+                          onClick={() => setCorrectionForm({ ...correctionForm, inspectorSignature: null })}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <canvas
+                        id="corrSignatureCanvas"
+                        width={300}
+                        height={100}
+                        className="border border-gray-300 rounded-lg bg-white cursor-crosshair"
+                        onMouseDown={(e) => {
+                          const canvas = e.currentTarget;
+                          const ctx = canvas.getContext('2d');
+                          if (!ctx) return;
+                          const rect = canvas.getBoundingClientRect();
+                          ctx.beginPath();
+                          ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+                          canvas.dataset.drawing = 'true';
+                        }}
+                        onMouseMove={(e) => {
+                          const canvas = e.currentTarget;
+                          if (canvas.dataset.drawing !== 'true') return;
+                          const ctx = canvas.getContext('2d');
+                          if (!ctx) return;
+                          const rect = canvas.getBoundingClientRect();
+                          ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+                          ctx.stroke();
+                        }}
+                        onMouseUp={(e) => {
+                          const canvas = e.currentTarget;
+                          canvas.dataset.drawing = 'false';
+                          setCorrectionForm({ ...correctionForm, inspectorSignature: canvas.toDataURL() });
+                        }}
+                        onMouseLeave={(e) => {
+                          const canvas = e.currentTarget;
+                          if (canvas.dataset.drawing === 'true') {
+                            canvas.dataset.drawing = 'false';
+                            setCorrectionForm({ ...correctionForm, inspectorSignature: canvas.toDataURL() });
+                          }
+                        }}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex gap-3 justify-end p-4 border-t bg-gray-50 rounded-b-xl">
+              <button
+                onClick={() => setCorrectionModal(null)}
+                className="px-5 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                ביטול
+              </button>
+              <button
+                onClick={handleSaveCorrection}
+                className="px-5 py-2.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
+              >
+                שמור תיקון
               </button>
             </div>
           </div>

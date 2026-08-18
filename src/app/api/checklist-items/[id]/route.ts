@@ -19,6 +19,8 @@ export async function PUT(
         isCompleted: data.isCompleted,
         status: data.status,
         images: data.images,
+        nonConformance: data.nonConformance,
+        correction: data.correction,
       },
     });
 

@@ -93,6 +93,12 @@ model ChecklistItem {
   sortOrder    Int      @default(0)
   images       Json     @default("[]")
 
+  // טופס אי-התאמה (כשסטטוס = not_ok)
+  nonConformance Json?
+
+  // טופס תיקון (כשסטטוס = corrected)
+  correction     Json?
+
   checklist Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
 }
 
