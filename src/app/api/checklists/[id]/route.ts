@@ -42,18 +42,23 @@ export async function PUT(
     const { id } = await params;
     const data = await request.json();
 
+    const updateData: Record<string, unknown> = {};
+
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.building !== undefined) updateData.building = data.building;
+    if (data.elementType !== undefined) updateData.elementType = data.elementType;
+    if (data.location !== undefined) updateData.location = data.location;
+    if (data.planNumber !== undefined) updateData.planNumber = data.planNumber;
+    if (data.mainContractor !== undefined) updateData.mainContractor = data.mainContractor;
+    if (data.openDate !== undefined) updateData.openDate = data.openDate ? new Date(data.openDate) : null;
+    if (data.closeDate !== undefined) updateData.closeDate = data.closeDate ? new Date(data.closeDate) : null;
+    if (data.signature !== undefined) updateData.signature = data.signature;
+    if (data.signedBy !== undefined) updateData.signedBy = data.signedBy;
+    if (data.signedAt !== undefined) updateData.signedAt = data.signedAt ? new Date(data.signedAt) : null;
+
     const checklist = await prisma.checklist.update({
       where: { id },
-      data: {
-        name: data.name,
-        building: data.building,
-        elementType: data.elementType,
-        location: data.location,
-        planNumber: data.planNumber,
-        mainContractor: data.mainContractor,
-        openDate: data.openDate ? new Date(data.openDate) : null,
-        closeDate: data.closeDate ? new Date(data.closeDate) : null,
-      },
+      data: updateData,
       include: {
         items: {
           orderBy: { sortOrder: 'asc' },

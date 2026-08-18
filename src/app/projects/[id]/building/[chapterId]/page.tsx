@@ -73,6 +73,9 @@ interface Checklist {
   mainContractor: string | null;
   openDate: string | null;
   closeDate: string | null;
+  signature: string | null;
+  signedBy: string | null;
+  signedAt: string | null;
   items: ChecklistItem[];
 }
 
@@ -104,7 +107,8 @@ export default function ChapterDetailPage() {
     performingLab: '',     // מעבדה מבצעת
   });
   const [expandedChecklist, setExpandedChecklist] = useState<string | null>(null);
-  const [signatureModal, setSignatureModal] = useState<{ itemId: string; checklistId: string } | null>(null);
+  const [signatureModal, setSignatureModal] = useState<{ checklistId: string } | null>(null);
+  const [signedByName, setSignedByName] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [activeTab, setActiveTab] = useState<'checklists' | 'nonConformances'>('checklists');
@@ -510,12 +514,14 @@ export default function ChapterDetailPage() {
     }
   };
 
-  const openSignatureModal = (itemId: string, checklistId: string) => {
-    setSignatureModal({ itemId, checklistId });
+  const openSignatureModal = (checklistId: string) => {
+    setSignatureModal({ checklistId });
+    setSignedByName('');
   };
 
   const closeSignatureModal = () => {
     setSignatureModal(null);
+    setSignedByName('');
     setIsDrawing(false);
   };
 
@@ -591,7 +597,27 @@ export default function ChapterDetailPage() {
     if (!signatureModal || !canvasRef.current) return;
 
     const signatureData = canvasRef.current.toDataURL('image/png');
-    await handleUpdateItem(signatureModal.itemId, 'signature', signatureData);
+
+    try {
+      await fetch(`/api/checklists/${signatureModal.checklistId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          signature: signatureData,
+          signedBy: signedByName,
+          signedAt: new Date().toISOString(),
+        }),
+      });
+
+      setChecklists(prev => prev.map(c =>
+        c.id === signatureModal.checklistId
+          ? { ...c, signature: signatureData, signedBy: signedByName, signedAt: new Date().toISOString() }
+          : c
+      ));
+    } catch (error) {
+      console.error('Error saving signature:', error);
+    }
+
     closeSignatureModal();
   };
 
@@ -1057,7 +1083,7 @@ export default function ChapterDetailPage() {
                                     </div>
 
                                     {/* Meta Fields */}
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                       <div>
                                         <label className="block text-sm font-medium text-gray-500 mb-1">תאריך</label>
                                         <input
@@ -1077,27 +1103,6 @@ export default function ChapterDetailPage() {
                                           placeholder="הזן שם"
                                           className="w-full p-2.5 border border-gray-300 rounded-lg text-sm"
                                         />
-                                      </div>
-                                      <div>
-                                        <label className="block text-sm font-medium text-gray-500 mb-1">חתימה</label>
-                                        {item.signature ? (
-                                          <div className="flex items-center gap-2 p-2.5 border border-gray-300 rounded-lg bg-white">
-                                            <img src={item.signature} alt="חתימה" className="h-6 object-contain" />
-                                            <button
-                                              onClick={() => openSignatureModal(item.id, checklist.id)}
-                                              className="text-blue-600 hover:text-blue-800 text-xs"
-                                            >
-                                              שנה
-                                            </button>
-                                          </div>
-                                        ) : (
-                                          <button
-                                            onClick={() => openSignatureModal(item.id, checklist.id)}
-                                            className="w-full p-2.5 border border-dashed border-blue-300 rounded-lg text-sm text-blue-600 hover:bg-blue-50"
-                                          >
-                                            לחץ לחתימה
-                                          </button>
-                                        )}
                                       </div>
                                       <div>
                                         <label className="block text-sm font-medium text-gray-500 mb-1">הערות</label>
@@ -1162,6 +1167,39 @@ export default function ChapterDetailPage() {
                             </div>
                           </div>
                         ))}
+
+                        {/* Checklist Signature Section */}
+                        <div className="mt-6 pt-4 border-t border-gray-200">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium text-gray-700">חתימה על רשימת התיוג</h4>
+                            {checklist.signature ? (
+                              <div className="flex items-center gap-4">
+                                <div className="text-sm text-gray-500">
+                                  {checklist.signedBy && <span className="font-medium">{checklist.signedBy}</span>}
+                                  {checklist.signedAt && (
+                                    <span className="mr-2">
+                                      | {new Date(checklist.signedAt).toLocaleDateString('he-IL')}
+                                    </span>
+                                  )}
+                                </div>
+                                <img src={checklist.signature} alt="חתימה" className="h-12 border rounded-lg p-1 bg-white" />
+                                <button
+                                  onClick={() => openSignatureModal(checklist.id)}
+                                  className="text-blue-600 hover:text-blue-800 text-sm"
+                                >
+                                  שנה חתימה
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => openSignatureModal(checklist.id)}
+                                className="px-4 py-2 border border-dashed border-blue-300 rounded-lg text-sm text-blue-600 hover:bg-blue-50"
+                              >
+                                לחץ לחתימה
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -1344,7 +1382,17 @@ export default function ChapterDetailPage() {
       {signatureModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">חתימה</h3>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">חתימה על רשימת התיוג</h3>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">שם החותם</label>
+              <input
+                type="text"
+                value={signedByName}
+                onChange={(e) => setSignedByName(e.target.value)}
+                placeholder="הזן שם..."
+                className="w-full p-2.5 border border-gray-300 rounded-lg text-sm"
+              />
+            </div>
             <div className="border-2 border-gray-300 rounded-lg mb-4 touch-none">
               <canvas
                 ref={canvasRef}
